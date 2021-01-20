@@ -3,6 +3,7 @@
 import hashlib
 import consolidate_media
 import update_metadata
+import remove_pi
 import json
 import io
 from lxml import etree
@@ -342,5 +343,63 @@ def test_update_metadata(tmp_path, mocker):
                 <md:slug>alchemy-slug</md:slug>
             </metadata>
         </col:collection>
+    """
+    _compare_xml_strings(collection_xml.read_text(), expected)
+
+
+def test_remove_pi(tmp_path, mocker):
+    """Test remove_pi script"""
+    modules_dir = tmp_path / "modules"
+    module_name = "m00001"
+    module_dir = modules_dir / module_name
+    module_dir.mkdir(parents=True)
+
+    module_cnxml = module_dir / "index.cnxml"
+    module_cnxml_content = """
+        <document xmlns="http://cnx.rice.edu/cnxml">
+            <title>Test module</title>
+            <content>
+            <?cnx.eoc class="key-equations" title="Key Equations"?>
+            <?cnx.answers class="section-exercises"?>
+            Some Content
+            </content>
+        </document>
+    """
+    module_cnxml.write_text(module_cnxml_content)
+
+    collections_dir = tmp_path / "collections"
+    collections_dir.mkdir()
+    collection_name = "alchemy"
+
+    collection_xml = collections_dir / f"{collection_name}.collection.xml"
+    collection_xml_content = """
+        <col:collection xmlns="http://cnx.rice.edu/collxml"
+            xmlns:col="http://cnx.rice.edu/collxml">
+            <?cnx.idk class="not-sure-if-this-happens" title="Please remove"?>
+        </col:collection>
+    """
+    collection_xml.write_text(collection_xml_content)
+
+    mocker.patch(
+        "sys.argv",
+        ["", modules_dir, collections_dir]
+    )
+    remove_pi.main()
+
+    expected = """
+        <document xmlns="http://cnx.rice.edu/cnxml">
+            <title>Test module</title>
+            <content>
+            
+            Some Content
+            </content>
+        </document>
+    """
+    _compare_xml_strings(module_cnxml.read_text(), expected)
+
+    expected = """
+        <col:collection xmlns="http://cnx.rice.edu/collxml"
+            xmlns:col="http://cnx.rice.edu/collxml">
+            </col:collection>
     """
     _compare_xml_strings(collection_xml.read_text(), expected)
