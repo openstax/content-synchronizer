@@ -1,7 +1,11 @@
 #!/usr/bin/env bash
 set -xeo pipefail
 cd $OUTPUT
-rm -f module-ids canonical-modules
+rm -f module-ids canonical-modules archive-syncfile
+
+header="Authorization: token ${GITHUB_TOKEN}"
+wget --header "$header" https://raw.githubusercontent.com/openstax/$BOOK_REPO_NAME/main/archive-syncfile
+
 while read slug collid
 do
   rm -rf ./"$slug"
@@ -25,5 +29,5 @@ do
 done < archive-syncfile
 python $CODE_DIR/update_metadata.py modules collections metadata
 find modules/. -name metadata.json | xargs rm
-rm -rf metadata
+rm -rf metadata module-ids canonical-modules
 echo 'Done.'
