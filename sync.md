@@ -1,11 +1,14 @@
 # Overview
 
-The sync scripts / code in this repo will eventually be moved into a dedicated repository once we're ready to start creating pipelines to automate this process. For the time being, the following steps can be run  manually to create a sync Docker image and udpate the repo:
+Following steps can be run  manually to create a sync Docker image and update the repo:
 
 ```sh
 docker build . -t git-storage-sync
-docker run --rm -v $PWD:/output -e OUTPUT=/output git-storage-sync
+docker run --rm -v $here:/output -e OUTPUT=/output -e GITHUB_TOKEN=$GITHUB_TOKEN -e BOOK_REPO_NAME=$BOOK_REPO_NAME git-storage-sync
 ```
+`$here` Local location of script output, ideally the book repo you're trying to update
+`$GITHUB_TOKEN` Personal Github Access Token
+`$BOOK_REPO_NAME` Name of Github Book Repository
 
 There are also unit tests for the sync scripts which can eventually be integrated with CI, but for the time being can be run manually:
 
