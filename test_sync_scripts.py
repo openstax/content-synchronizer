@@ -323,7 +323,6 @@ def test_update_metadata(tmp_path, mocker):
                 <md:title>Test module</md:title>
                 <md:abstract/>
             <md:uuid>00000000-0000-0000-0000-000000000001</md:uuid>
-            <md:canonical-book-uuid>00000000-0000-0000-0000-000000000000</md:canonical-book-uuid>
             </metadata>
         </document>
     """
