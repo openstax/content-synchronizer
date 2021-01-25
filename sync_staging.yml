@@ -1,0 +1,52 @@
+---
+resources:
+  - name: s3-trigger
+    type: s3
+    source:
+      access_key_id: ((aws-access-key-id))
+      secret_access_key: ((aws-secret-access-key))
+      bucket: ce-rap-brenda
+      versioned_file: trigger.txt
+
+  # - name: fetch-and-format
+  #   type: docker-image
+  #   source:
+  #     password: ((docker-password))
+  #     username: ((docker-username))
+  #     repository: bn16/content-sync
+
+  - name: book-content
+    type: git
+    source:
+      uri: git@github.com:openstax/college-algebra-bundle.git
+      branch: staging
+      username: ((github-password))
+      password: ((githun-username))
+
+jobs:
+  - name: sync-archive-staging-to-git-staging
+    public: true
+    plan:
+    - get: s3-trigger
+      version: every
+      trigger: true
+    - task: sync content
+      config:
+        platform: linux
+        image_resource:
+          type: docker-image
+          source:
+            username: ((dockerhub-username))
+            password: ((dockerhub-password))
+            repository: bn16/sync-content
+        outputs:
+          name: output-of-sync
+        run:
+          # path: /bin/bash
+          # args:
+          # - -cxe
+          # - |-
+          #   touch output-of-sync/jello.txt
+          #   echo "hi mom" >>output-of-sync/jello.txt
+    - put: book-content
+      params: {repository: output-of-sync}
