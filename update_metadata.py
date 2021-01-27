@@ -15,8 +15,7 @@ MODULE_METADATA_ACCEPT_TAGS = [
     f"{{{NS_MDML}}}content-id"
 ]
 MODULE_METADATA_ADDED_TAGS_FROM_JSON = {
-    "id": "uuid",
-    "canonical": "canonical-book-uuid"
+    "id": "uuid"
 }
 COLLECTION_METADATA_ACCEPT_TAGS = [
     f"{{{NS_MDML}}}title",
