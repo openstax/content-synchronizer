@@ -40,13 +40,13 @@ jobs:
             password: ((dockerhub-password))
             repository: bn16/sync-content
         outputs:
-          name: output-of-sync
+          - name: output-of-sync
         run:
-          # path: /bin/bash
-          # args:
-          # - -cxe
-          # - |-
-          #   touch output-of-sync/jello.txt
-          #   echo "hi mom" >>output-of-sync/jello.txt
+          path: /bin/bash
+          args:
+          - -cxe
+          - |-
+            touch output-of-sync/jello.txt
+            echo "hi mom" >>output-of-sync/jello.txt
     - put: book-content
       params: {repository: output-of-sync}
