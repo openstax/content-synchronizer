@@ -3,11 +3,6 @@ set -xeo pipefail
 cd $OUTPUT
 rm -f module-ids canonical-modules archive-syncfile
 
-set +x
-header="Authorization: token ${GITHUB_TOKEN}"
-wget --header "$header" https://raw.githubusercontent.com/openstax/$BOOK_REPO_NAME/main/archive-syncfile
-
-set -xeo pipefail
 while read slug collid
 do
   rm -rf ./"$slug"
