@@ -1,34 +1,17 @@
 ---
 resources:
-  - name: s3-trigger
-    type: s3
-    source:
-      access_key_id: ((aws-access-key-id))
-      secret_access_key: ((aws-secret-access-key))
-      bucket: ce-rap-brenda
-      versioned_file: trigger.txt
-
-  # - name: fetch-and-format
-  #   type: docker-image
-  #   source:
-  #     password: ((docker-password))
-  #     username: ((docker-username))
-  #     repository: bn16/content-sync
-
-  - name: book-content
+  - name: osbook
     type: git
     source:
-      uri: git@github.com:openstax/college-algebra-bundle.git
+      uri: git@github.com:openstax/osbooks-college-algebra-bundle.git
       branch: staging
-      username: ((github-password))
-      password: ((githun-username))
+      private_key: ((github-private-key))
 
 jobs:
-  - name: sync-archive-staging-to-git-staging
+  - name: sync-staging-branch
     public: true
     plan:
-    - get: s3-trigger
-      version: every
+    - get: osbook
       trigger: true
     - task: sync content
       config:
@@ -36,17 +19,30 @@ jobs:
         image_resource:
           type: docker-image
           source:
-            username: ((dockerhub-username))
-            password: ((dockerhub-password))
-            repository: bn16/sync-content
+            username: ((docker-username))
+            password: ((docker-password))
+            repository: bn16/osbook-synchronizer
+        inputs:
+          - name: osbook
         outputs:
-          - name: output-of-sync
+          - name: updated-osbook
         run:
           path: /bin/bash
           args:
-          - -cxe
-          - |-
-            touch output-of-sync/jello.txt
-            echo "hi mom" >>output-of-sync/jello.txt
-    - put: book-content
-      params: {repository: output-of-sync}
+            - '-cxe'
+            - |-
+
+              git clone osbook updated-osbook
+
+              cd updated-osbook
+              export CODE_DIR="/code/scripts"
+              bash $CODE_DIR/sync.sh
+
+              git config --global user.email "bigbird@sesamestreet.com"
+              git config --global user.name "Big Bird"
+
+              git add .
+              git commit -m "sync with archive staging"
+
+    - put: osbook
+      params: {repository: updated-osbook}
