@@ -1,5 +1,10 @@
 ---
 resources:
+  - name: every-3-hours
+    type: time
+    source:
+      interval: 3h
+
   - name: osbook
     type: git
     source:
@@ -11,8 +16,9 @@ jobs:
   - name: sync-staging-branch
     public: true
     plan:
-    - get: osbook
+    - get: every-3-hours
       trigger: true
+    - get: osbook
     - task: sync content
       config:
         platform: linux
