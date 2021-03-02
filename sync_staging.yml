@@ -10,10 +10,10 @@ resources:
     source:
       uri: git@github.com:openstax/osbooks-college-algebra-bundle.git
       branch: staging
-      private_key: ((github-private-key))
+      private_key: ((ce-github-private-key))
 
 jobs:
-  - name: sync-staging-branch
+  - name: sync-osbook-branch
     public: true
     plan:
     - get: every-3-hours
@@ -23,32 +23,30 @@ jobs:
       config:
         platform: linux
         image_resource:
-          type: docker-image
+          type: registry-image
           source:
-            username: ((docker-username))
-            password: ((docker-password))
+            username: ((ce-dockerhub-id))
+            password: ((ce-dockerhub-token))
             repository: bn16/osbook-synchronizer
         inputs:
           - name: osbook
         outputs:
-          - name: updated-osbook
+          - name: osbook
         run:
           path: /bin/bash
           args:
             - '-cxe'
             - |-
 
-              git clone osbook updated-osbook
-
-              cd updated-osbook
+              cd osbook
               export CODE_DIR="/code/scripts"
               bash $CODE_DIR/sync.sh
 
-              git config --global user.email "bigbird@sesamestreet.com"
-              git config --global user.name "Big Bird"
+              git config --global user.email "openstax@openstax.com"
+              git config --global user.name "Content Synchronizer"
 
               git add .
               git commit -m "sync with archive staging"
-
     - put: osbook
-      params: {repository: updated-osbook}
+      params:
+        repository: osbook
