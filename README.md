@@ -20,8 +20,7 @@ pytest test_sync_scripts.py
 ```
 ## Development
 
-To run the pipeline locally:
-Populate the following in a `vars.yml` :
+To run the pipeline locally, populate the following in a `vars.yml` :
 ```
 ce-dockerhub-id: dockerhubusername
 ce-dockerhub-token: dockerhubpassword
@@ -31,18 +30,12 @@ ce-github-private-key: |
         -----END OPENSSH PRIVATE KEY-----
 ```
 
-Populate the following in a `params.yml` :
+Then, set your pipeline with `vars.yml` containing your credentials.
+and params: 
+`osbook-git-uri`: git uri of book you want to sync
+`sync-branch`: branch you want to sync
+`from-server`: with which archive server
 ```
-ce-dockerhub-id: dockerhubusername
-ce-dockerhub-token: dockerhubpassword
-ce-github-private-key: |
-        -----BEGIN OPENSSH PRIVATE KEY-----
-        ....
-        -----END OPENSSH PRIVATE KEY-----
-```
-
-Set your pipeline with `yml` containing your credentials.
-```
-fly -t local-concourse set-pipeline -p sync-branch -c sync_branch.yml -l vars.yml -v neb-get-server=cnx.org
-fly -t local-concourse unpause-pipeline -p sync-branch
+$ fly -t local-concourse set-pipeline -p sync-content -c sync.yml -l vars.yml -v osbook-git-uri=git@github.com:openstax/osbooks-college-algebra-bundle.git -v sync-branch=staging -v from-server=cnx.org
+$ fly -t local-concourse unpause-pipeline -p sync-content
 ```

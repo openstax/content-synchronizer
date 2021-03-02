@@ -8,8 +8,15 @@ resources:
   - name: osbook
     type: git
     source:
-      uri: git@github.com:openstax/osbooks-college-algebra-bundle.git
-      branch: staging
+      branch: main
+      uri: ((osbook-git-uri))
+      private_key: ((ce-github-private-key))
+
+  - name: synced-osbook
+    type: git
+    source:
+      branch: ((sync-branch))
+      uri: ((osbook-git-uri))
       private_key: ((ce-github-private-key))
 
 jobs:
@@ -33,7 +40,7 @@ jobs:
         outputs:
           - name: osbook
         params:
-          SERVER: ((neb-get-server))
+          SERVER: ((from-server))
           CODE_DIR: /code/scripts
         run:
           path: /bin/bash
@@ -43,12 +50,11 @@ jobs:
 
               cd osbook
               bash $CODE_DIR/sync.sh
-
               git config --global user.email "openstax@openstax.com"
               git config --global user.name "Content Synchronizer"
-
               git add .
-              git commit -m "sync with archive staging"
-    - put: osbook
+              git commit -m "sync with archive $SERVER"
+
+    - put: synced-osbook
       params:
         repository: osbook
