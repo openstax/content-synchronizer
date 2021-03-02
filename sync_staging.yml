@@ -32,6 +32,9 @@ jobs:
           - name: osbook
         outputs:
           - name: osbook
+        params:
+          SERVER: ((neb-get-server))
+          CODE_DIR: /code/scripts
         run:
           path: /bin/bash
           args:
@@ -39,7 +42,6 @@ jobs:
             - |-
 
               cd osbook
-              export CODE_DIR="/code/scripts"
               bash $CODE_DIR/sync.sh
 
               git config --global user.email "openstax@openstax.com"

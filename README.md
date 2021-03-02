@@ -21,7 +21,17 @@ pytest test_sync_scripts.py
 ## Development
 
 To run the pipeline locally:
-Populate the following in a `yml` :
+Populate the following in a `vars.yml` :
+```
+ce-dockerhub-id: dockerhubusername
+ce-dockerhub-token: dockerhubpassword
+ce-github-private-key: |
+        -----BEGIN OPENSSH PRIVATE KEY-----
+        ....
+        -----END OPENSSH PRIVATE KEY-----
+```
+
+Populate the following in a `params.yml` :
 ```
 ce-dockerhub-id: dockerhubusername
 ce-dockerhub-token: dockerhubpassword
@@ -33,6 +43,6 @@ ce-github-private-key: |
 
 Set your pipeline with `yml` containing your credentials.
 ```
-fly -t local-concourse set-pipeline -p sync-branch -c sync_branch.yml -l credentials.yml
+fly -t local-concourse set-pipeline -p sync-branch -c sync_branch.yml -l vars.yml -v neb-get-server=cnx.org
 fly -t local-concourse unpause-pipeline -p sync-branch
 ```
