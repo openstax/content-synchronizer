@@ -1,0 +1,60 @@
+---
+resources:
+  - name: every-3-hours
+    type: time
+    source:
+      interval: 3h
+
+  - name: osbook
+    type: git
+    source:
+      branch: main
+      uri: ((osbook-git-uri))
+      private_key: ((ce-github-private-key))
+
+  - name: synced-osbook
+    type: git
+    source:
+      branch: ((sync-branch))
+      uri: ((osbook-git-uri))
+      private_key: ((ce-github-private-key))
+
+jobs:
+  - name: sync-osbook-branch
+    public: true
+    plan:
+    - get: every-3-hours
+      trigger: true
+    - get: osbook
+    - task: sync content
+      config:
+        platform: linux
+        image_resource:
+          type: registry-image
+          source:
+            username: ((ce-dockerhub-id))
+            password: ((ce-dockerhub-token))
+            repository: bn16/osbook-synchronizer
+        inputs:
+          - name: osbook
+        outputs:
+          - name: osbook
+        params:
+          SERVER: ((from-server))
+          CODE_DIR: /code/scripts
+        run:
+          path: /bin/bash
+          args:
+            - '-cxe'
+            - |-
+
+              cd osbook
+              bash $CODE_DIR/sync.sh
+              git config --global user.email "openstax@openstax.com"
+              git config --global user.name "Content Synchronizer"
+              git add .
+              git commit -m "sync with archive $SERVER"
+
+    - put: synced-osbook
+      params:
+        repository: osbook

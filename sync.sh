@@ -1,20 +1,13 @@
 #!/usr/bin/env bash
 set -xeo pipefail
-cd $OUTPUT
-rm -f module-ids canonical-modules archive-syncfile
-
-set +x
-header="Authorization: token ${GITHUB_TOKEN}"
-wget --header "$header" https://raw.githubusercontent.com/openstax/$BOOK_REPO_NAME/main/archive-syncfile
-
-set -xeo pipefail
 while read slug collid
 do
   rm -rf ./"$slug"
-  neb get -r -d $slug cnx.org $collid latest
+  neb get -r -d $slug $SERVER $collid latest
   echo "--- $slug" >> module-ids
   find "./$slug/" -maxdepth 1 -mindepth 1 -type d | xargs -I{} basename {}  >> module-ids
 done < archive-syncfile
+
 python $CODE_DIR/find-module-canonical.py > canonical-modules
 rm -rf modules collections metadata media
 mkdir modules collections metadata media
