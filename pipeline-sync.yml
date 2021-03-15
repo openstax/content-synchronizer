@@ -5,7 +5,7 @@ docker-credentials: &docker-credentials
 
 repo-authorization: &repo-authorization
   uri: git@github.com:openstax/((book-repo)).git
-  private_key: ((ce-github-private-key))
+  private_key: ((github-private-key))
 
 resource_types:
   - name: archive-api
@@ -20,7 +20,7 @@ resources:
     source:
       archive_server: ((archive-server))
       book_repo: ((book-repo))
-      github_token: ((github-token))
+      github_token: ((github-api-token))
 
   - name: ((book-repo))
     type: git
