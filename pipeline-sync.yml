@@ -1,60 +1,77 @@
 ---
-resources:
-  - name: every-3-hours
-    type: time
-    source:
-      interval: 3h
+docker-credentials: &docker-credentials
+  username: ((ce-dockerhub-id))
+  password: ((ce-dockerhub-token))
 
-  - name: osbook
+repo-authorization: &repo-authorization
+  uri: git@github.com:openstax/((book-repo)).git
+  private_key: ((ce-github-private-key))
+
+resource_types:
+  - name: archive-api
+    type: registry-image
+    source:
+      <<: *docker-credentials
+      repository: bn16/archive-version-checker
+
+resources:
+  - name: version-checker
+    type: archive-api
+    source:
+      archive_server: ((archive-server))
+      book_repo: ((book-repo))
+      github_token: ((github-token))
+
+  - name: ((book-repo))
     type: git
     source:
       branch: main
-      uri: ((osbook-git-uri))
-      private_key: ((ce-github-private-key))
+      <<: *repo-authorization
 
-  - name: synced-osbook
+  - name: synced-((book-repo))
     type: git
     source:
       branch: ((sync-branch))
-      uri: ((osbook-git-uri))
-      private_key: ((ce-github-private-key))
+      <<: *repo-authorization
 
 jobs:
-  - name: sync-osbook-branch
+  - name: sync-((book-repo))
     public: true
     plan:
-    - get: every-3-hours
+    - get: ((book-repo))
+    - get: version-checker
       trigger: true
-    - get: osbook
+      version: every
     - task: sync content
       config:
         platform: linux
         image_resource:
           type: registry-image
           source:
-            username: ((ce-dockerhub-id))
-            password: ((ce-dockerhub-token))
+            <<: *docker-credentials
             repository: bn16/osbook-synchronizer
         inputs:
-          - name: osbook
+          - name: ((book-repo))
         outputs:
-          - name: osbook
+          - name: ((book-repo))
         params:
-          SERVER: ((from-server))
+          SERVER: ((archive-server))
           CODE_DIR: /code/scripts
+          OSBOOK: ((book-repo))
         run:
           path: /bin/bash
           args:
             - '-cxe'
             - |-
 
-              cd osbook
+              cd $OSBOOK
               bash $CODE_DIR/sync.sh
               git config --global user.email "openstax@openstax.com"
               git config --global user.name "Content Synchronizer"
               git add .
               git commit -m "sync with archive $SERVER"
 
-    - put: synced-osbook
+    - put: synced-((book-repo))
       params:
-        repository: osbook
+        repository: ((book-repo))
+        force: true
