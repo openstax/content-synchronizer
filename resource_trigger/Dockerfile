@@ -1,13 +1,13 @@
-FROM python:3-alpine
+FROM python:3.8.3-alpine3.11
 
 WORKDIR /opt/resource/
 
-COPY dist/concourse-version-checker-resource-*.tar.gz .
-RUN pip install concourse-version-checker-resource-*.tar.gz
+RUN /usr/local/bin/python -m pip install --upgrade pip
+RUN pip3 install requests python-dateutil
 
-COPY /src/check.py /opt/resource/check
-COPY /src/in.py /opt/resource/in
-COPY /src/out.py /opt/resource/out
-COPY /src/utils.py /opt/resource/utils.py
+COPY check.py /opt/resource/check
+COPY in.py /opt/resource/in
+COPY out.py /opt/resource/out
+COPY utils.py /opt/resource/utils.py
 
 RUN chmod +x /opt/resource/check /opt/resource/in /opt/resource/out
