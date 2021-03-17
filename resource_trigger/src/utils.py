@@ -1,4 +1,10 @@
-{
+import json
+import sys
+import re
+
+# Map of legacy id to uuid
+# Legacy ids provided by HOLY GRAIL spreadsheet from CMs
+BOOK_UUIDS = {
     "col11963": "9a1df55a-b167-4736-b5ad-15d996704270",
     "col11965": "1d39a348-071f-4537-85b6-c98912458c3c",
     "col11966": "a31cd793-2162-4e9e-acb5-6e6bbd76a5fa",
@@ -63,3 +69,29 @@
     "col25448": "9ab4ba6d-1e48-486d-a2de-38ae1617ca84",
     "col11992": "2e737be8-ea65-48c3-aa0a-9f35b4c6a966"
 }
+
+
+def msg(msg, *args, **kwargs):
+    if args or kwargs:
+        msg = msg.format(*args, **kwargs)
+    print(msg, file=sys.stderr)
+    try:
+        with open('/var/log/check', 'a') as f:
+            f.write("msg:" + msg + "\n")
+    except PermissionError:
+        pass
+
+
+def parse_legacy_ids(sync_file):
+    pattern = "col\\d{5}"
+    legacy_ids = re.findall(pattern, sync_file)
+
+    return legacy_ids
+
+
+def determine_archive_server(server):
+    if not server:
+        msg("Error: No archive server was given.")
+        sys.exit(1)
+    delimiter = '-' if server.count('.') > 1 else '.'
+    return 'archive' + delimiter + server

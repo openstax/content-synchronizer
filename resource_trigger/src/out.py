@@ -5,11 +5,15 @@ import sys
 # This isn't doing anything
 
 
-def _in(instream):
+def _out(instream):
     payload = json.load(instream)
 
     return payload
 
 
-if __name__ == "__main__":
-    print(json.dumps(_in(sys.stdin)))
+def main():
+    print(json.dumps(_out(sys.stdin)))
+
+
+if __name__ == '__main__':
+    main()
