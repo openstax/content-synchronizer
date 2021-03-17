@@ -1,5 +1,5 @@
 """Tests for Concourse (Pipeline Trigger) Resource"""
-from src import check
+import check
 import pytest
 import io
 import json
@@ -35,7 +35,7 @@ def test_version_format(mocker):
         """
 
     mocker.patch(
-        'src.check.get_sync_file',
+        'check.get_sync_file',
         return_value=sync_file
     )
 
@@ -56,7 +56,7 @@ def test_check_type(mocker):
         """
 
     mocker.patch(
-        'src.check.get_sync_file',
+        'check.get_sync_file',
         return_value=sync_file
     )
 

@@ -6,6 +6,19 @@ import sys
 from utils import msg, parse_legacy_ids, determine_archive_server, BOOK_UUIDS
 
 
+def get_sync_file(token, repo):
+    headers = {'Authorization': 'token ' + token}
+    endpoint = f"https://raw.githubusercontent.com/openstax/{repo}/main/archive-syncfile"
+    resp = requests.get(endpoint, headers=headers)
+
+    if resp.status_code != 200:
+        msg(f"Error: Unable to get archive-syncfile for {repo}")
+        sys.exit(1)
+
+    sync_file = resp.content.decode()
+    return sync_file
+
+
 def _check(instream):
     payload = json.load(instream)
     source = payload['source']
@@ -16,15 +29,16 @@ def _check(instream):
 
     msg(f"Syncing {repo} with {archive_server}...")
 
-    headers = {'Authorization': 'token ' + token}
-    endpoint = f"https://raw.githubusercontent.com/openstax/{repo}/main/archive-syncfile"
-    resp = requests.get(endpoint, headers=headers)
+    # headers = {'Authorization': 'token ' + token}
+    # endpoint = f"https://raw.githubusercontent.com/openstax/{repo}/main/archive-syncfile"
+    # resp = requests.get(endpoint, headers=headers)
 
-    if resp.status_code != 200:
-        msg(f"Error: Unable to get archive-syncfile for {repo}")
-        sys.exit(1)
+    # if resp.status_code != 200:
+    #     msg(f"Error: Unable to get archive-syncfile for {repo}")
+    #     sys.exit(1)
 
-    sync_file = resp.content.decode()
+    # sync_file = resp.content.decode()
+    sync_file = get_sync_file(token, repo)
     legacy_ids = parse_legacy_ids(sync_file)
 
     # Get versions from uuid via archive api
