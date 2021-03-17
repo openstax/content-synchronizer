@@ -17,7 +17,6 @@ def fake_input_stream():
             "source": {
                 "archive_server": "qa.cnx.org",
                 "book_repo": "osbooks-college-algebra-bundle",
-                "sync_branch": "test-staging",
                 "github_token": "xxxx"
             },
             "version": ""
