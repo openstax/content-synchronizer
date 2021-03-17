@@ -26,3 +26,4 @@ jobs:
           pip install -r requirements.txt
           pip install pytest pytest-mock
           pytest test_sync_scripts.py
+          pytest resource_trigger/test_sync_trigger.py
