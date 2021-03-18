@@ -29,19 +29,9 @@ BOOK_UUIDS = {
     "col11667": "fd53eae1-fa23-47c7-bb1b-972349835c3c",
     "col12081": "cce64fde-f448-43b8-ae88-27705cceb0da",
     "col11758": "13ac107a-f15f-49d2-97e8-60ab2e3b519c",
-    "col11407": "afe4332a-c97f-4fc4-be27-4e4d384a32d8",
     "col12078": "6c322e32-9fb0-4c4d-a1d7-20c95c5c7af2",
-    "col11448": "185cbf87-c72e-48f5-b51e-f14f21b5eabd",
-    "col11613": "69619d2b-68f0-44b0-b074-a9b2bf90b2c6",
-    "col11626": "4061c832-098e-4b3c-a1d9-7eb593a2cb31",
-    "col11627": "ea2f225e-6063-41ca-bcd8-36482e15ef65",
     "col11487": "b3c1e1d2-839c-42b0-a314-e119a8aafbdd",
-    "col11858": "ca344e2d-6731-43cd-b851-a7b3aa0b37aa",
-    "col11864": "33076054-ec1d-4417-8824-ce354efe42d0",
     "col24361": "8d50a0af-948b-4204-a71d-4826cba765b8",
-    "col11760": "85abf193-2bd2-4908-8563-90b8a7ac8df6",
-    "col12012": "4539ae23-1ccc-421e-9b25-843acbb6c4b0",
-    "col11995": "5bcc0e59-7345-421d-8507-a1e4608685e8",
     "col11629": "4abf04bf-93a0-45c3-9cbc-2cefd46e68cc",
     "col11756": "caa57dab-41c7-455e-bd6f-f443cda5519c",
     "col12116": "0889907c-f0ef-496a-bcb8-2a5bb121717f",
@@ -49,7 +39,6 @@ BOOK_UUIDS = {
     "col11844": "8d04a686-d5e8-4798-a27d-c608e4d0e187",
     "col28330": "c3acb2ab-7d5c-45ad-b3cd-e59673fedd4e",
     "col29124": "2d941ab9-ac5b-4eb8-b21c-965d36a4f296",
-    "col32026": "507feb1e-cfff-4b54-bc07-d52636cecfe3",
     "col25479": "920d1c8a-606c-4888-bfd4-d1ee27ce1795",
     "col12087": "e42bd376-624b-4c0f-972f-e0c57998e765",
     "col25722": "914ac66e-e1ec-486d-8a9c-97b0f7a99774",
@@ -57,7 +46,6 @@ BOOK_UUIDS = {
     "col11762": "02040312-72c8-441e-a685-20e9333f3e1d",
     "col11406": "031da8d3-b525-429c-80cf-6c8ed997733a",
     "col25734": "4e09771f-a8aa-40ce-9063-aa58cc24e77f",
-    "col12006": "405335a3-7cff-4df2-a9ad-29062a4af261",
     "col11759": "9b08c294-057f-4201-9f48-5d6ad992740d",
     "col11496": "14fb4ad7-39a1-4eee-ab6e-3ef2482e3e22",
     "col31596": "36004586-651c-4ded-af87-203aca22d946",
@@ -69,6 +57,24 @@ BOOK_UUIDS = {
     "col25448": "9ab4ba6d-1e48-486d-a2de-38ae1617ca84",
     "col11992": "2e737be8-ea65-48c3-aa0a-9f35b4c6a966"
 }
+
+# UUIDS from DB, HOLY GRAIL only contained legacy id
+Additional_UUIDS = {
+    "col11407": "afe4332a-c97f-4fc4-be27-4e4d384a32d8",
+    "col11448": "185cbf87-c72e-48f5-b51e-f14f21b5eabd",
+    "col11613": "69619d2b-68f0-44b0-b074-a9b2bf90b2c6",
+    "col11626": "4061c832-098e-4b3c-a1d9-7eb593a2cb31",
+    "col11627": "ea2f225e-6063-41ca-bcd8-36482e15ef65",
+    "col11760": "85abf193-2bd2-4908-8563-90b8a7ac8df6",
+    "col11858": "ca344e2d-6731-43cd-b851-a7b3aa0b37aa",
+    "col11864": "33076054-ec1d-4417-8824-ce354efe42d0",
+    "col11995": "5bcc0e59-7345-421d-8507-a1e4608685e8",
+    "col12006": "405335a3-7cff-4df2-a9ad-29062a4af261",
+    "col12012": "4539ae23-1ccc-421e-9b25-843acbb6c4b0",
+    "col32026": "507feb1e-cfff-4b54-bc07-d52636cecfe3"
+}
+
+BOOK_UUIDS.update(Additional_UUIDS)
 
 
 def msg(msg, *args, **kwargs):
