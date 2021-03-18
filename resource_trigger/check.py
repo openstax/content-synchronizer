@@ -49,7 +49,7 @@ def _check(instream):
         except KeyError as error:
             msg(error, file=sys.stderr)
             sys.exit(1)
-        link = f"https://{archive_server}/contents/{uuid}"
+        link = f"https://{archive_server}/extras/{uuid}"
         resp = requests.get(link)
 
         if resp.status_code != 200:
@@ -57,8 +57,7 @@ def _check(instream):
             sys.exit(1)
 
         content = json.loads(resp.content)
-        version = content['version']
-        legacy_id = content['legacy_id']
+        version = content['headVersion']
         versions.append(f'{legacy_id}@{version}')
 
     return [{"versions": ','.join(versions)}]
