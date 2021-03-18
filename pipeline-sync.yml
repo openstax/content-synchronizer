@@ -3,10 +3,6 @@ docker-credentials: &docker-credentials
   username: ((ce-dockerhub-id))
   password: ((ce-dockerhub-token))
 
-repo-authorization: &repo-authorization
-  uri: git@github.com:openstax/((book-repo)).git
-  private_key: ((github-private-key))
-
 resource_types:
   - name: archive-api
     type: registry-image
@@ -26,13 +22,8 @@ resources:
     type: git
     source:
       branch: main
-      <<: *repo-authorization
-
-  - name: synced-((book-repo))
-    type: git
-    source:
-      branch: ((sync-branch))
-      <<: *repo-authorization
+      uri: git@github.com:openstax/((book-repo)).git
+      private_key: ((github-private-key))
 
 jobs:
   - name: sync-((book-repo))
@@ -71,7 +62,7 @@ jobs:
               git add .
               git commit -m "sync with archive $SERVER"
 
-    - put: synced-((book-repo))
+    - put: ((book-repo))
       params:
         repository: ((book-repo))
         force: true
