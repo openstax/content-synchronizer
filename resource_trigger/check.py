@@ -29,15 +29,6 @@ def _check(instream):
 
     msg(f"Syncing {repo} with {archive_server}...")
 
-    # headers = {'Authorization': 'token ' + token}
-    # endpoint = f"https://raw.githubusercontent.com/openstax/{repo}/main/archive-syncfile"
-    # resp = requests.get(endpoint, headers=headers)
-
-    # if resp.status_code != 200:
-    #     msg(f"Error: Unable to get archive-syncfile for {repo}")
-    #     sys.exit(1)
-
-    # sync_file = resp.content.decode()
     sync_file = get_sync_file(token, repo)
     legacy_ids = parse_legacy_ids(sync_file)
 
