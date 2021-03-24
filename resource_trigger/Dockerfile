@@ -3,7 +3,7 @@ FROM python:3.8.3-alpine3.11
 WORKDIR /opt/resource/
 
 RUN /usr/local/bin/python -m pip install --upgrade pip
-RUN pip3 install requests python-dateutil
+RUN pip3 install requests
 
 COPY check.py /opt/resource/check
 COPY in.py /opt/resource/in
