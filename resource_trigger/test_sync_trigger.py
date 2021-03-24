@@ -4,7 +4,7 @@ import pytest
 import io
 import json
 import requests
-from utils import BOOK_UUIDS
+from utils import BOOK_UUIDS, determine_archive_server
 
 
 def fake_input_stream():
@@ -25,6 +25,36 @@ def fake_input_stream():
         }
 
     return make_stream(make_input())
+
+
+def test_server_resolution():
+    server = 'qa.cnx.org'
+    expected_server = determine_archive_server(server)
+    assert expected_server == 'archive-qa.cnx.org'
+
+    server = 'staging.cnx.org'
+    expected_server = determine_archive_server(server)
+    assert expected_server == 'archive-staging.cnx.org'
+
+    server = 'cnx.org'
+    expected_server = determine_archive_server(server)
+    assert expected_server == 'archive.cnx.org'
+
+    server = 'qa'
+    expected_server = determine_archive_server(server)
+    assert expected_server == 'archive-qa.cnx.org'
+
+    server = 'prod'
+    expected_server = determine_archive_server(server)
+    assert expected_server == 'archive.cnx.org'
+
+    server = 'staging'
+    expected_server = determine_archive_server(server)
+    assert expected_server == 'archive-staging.cnx.org'
+
+    server = ''
+    with pytest.raises(SystemExit):
+        determine_archive_server(server)
 
 
 def test_github_request(requests_mock):

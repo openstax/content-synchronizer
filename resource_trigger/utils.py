@@ -99,5 +99,16 @@ def determine_archive_server(server):
     if not server:
         msg("Error: No archive server was given.")
         sys.exit(1)
-    delimiter = '-' if server.count('.') > 1 else '.'
-    return 'archive' + delimiter + server
+
+    domain = 'cnx.org'
+    archive_subdomain = 'archive'
+
+    if server == 'prod' or server == domain:
+        return f"{archive_subdomain}.{domain}"
+
+    delimiter = '-'
+    if domain not in server:
+        archive_subdomain = archive_subdomain + delimiter + server
+        return f"{archive_subdomain}.{domain}"
+    else:
+        return archive_subdomain + delimiter + server
