@@ -18,13 +18,12 @@ fly -t opsx-concourse set-pipeline \
 --pipeline sync-pipeline \
 --load-vars-from vars.yml \
 --var book-repo=osbooks-college-algebra-bundle \
---var archive-server=qa.cnx.org \
---var sync-branch=staging
+--var archive-server=qa
 ```
 
 Command Shorthand:
 ```
-fly -t local-concourse sp -c pipeline-sync.yml -p sync-pipeline -l vars.yml -v book-repo=osbooks-college-algebra-bundle -v archive-server=qa.cnx.org -v sync-branch=staging
+fly -t local-concourse sp -c pipeline-sync.yml -p sync-pipeline -l vars.yml -v book-repo=osbooks-college-algebra-bundle -v archive-server=qa
 ```
 
 **Where..**
@@ -53,11 +52,12 @@ ce-github-private-key: |
 
 ## Development & Testing
 
+### Sync Script
 Following steps can be run manually to create a sync Docker image containing the `sync.sh` script and update the repo:
 
 ```sh
 content-syncronizer$ docker build . -t git-storage-sync
-content-syncronizer$ docker run --rm -v $here:/output -e OUTPUT=/output -e git-storage-sync
+content-syncronizer$ docker run --rm -v $PWD:/output -e OUTPUT=/output git-storage-sync /code/scripts/sync.sh
 ```
 
 `$here` Local location of script output, ideally the book repo you're trying to update
