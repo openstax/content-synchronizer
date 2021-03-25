@@ -1,41 +1,71 @@
 # content-synchronizer
-This repository holds scripts needed to synchronize content from archive to a github repository.
 
-## Overview
+This repository holds scripts, images, and a pipeline configuration file used to sync book content from an **cnx archive server** to a **Github book repository**.
 
-Following steps can be run  manually to create a sync Docker image and update the repo:
+The content-synchronizer is a concourse pipeline (`pipeline-sync.yml`). Once a book repository is created and contains an *archive-syncfile* a pipeline can be set up (using the **Quick Start** steps below) to start the syncing process.
+
+Once a book repository is ready to be updated/ edited using [POET](https://github.com/openstax/poet) syncing will cease.
+## How it Works
+Once a pipeline is set up - A pipeline gets triggered when a book is published, a new version of the book is detected. A job will start to pull the content from the specified archive server (`archive-server`) to the specified book repository branch (`sync-branch`).
+## Quick Start
+Note: Book repository must contain an `archive-syncfile`, example can be found on [osbooks-college-algebra-bundle](https://github.com/openstax/osbooks-college-algebra-bundle/) book repo.
+
+### Use the Concourse `fly cli` to set up a pipeline to sync book repository.
+
+```
+fly -t opsx-concourse set-pipeline \
+--config pipeline-sync.yml \
+--pipeline sync-pipeline \
+--load-vars-from vars.yml \
+--var book-repo=osbooks-college-algebra-bundle \
+--var archive-server=qa.cnx.org \
+--var sync-branch=staging
+```
+
+Command Shorthand:
+```
+fly -t local-concourse sp -c pipeline-sync.yml -p sync-pipeline -l vars.yml -v book-repo=osbooks-college-algebra-bundle -v archive-server=qa.cnx.org -v sync-branch=staging
+```
+
+**Where..**
+- `--config` - pipeline configuration file
+- `--pipeline` - name of pipeline
+- `--load-vars-from` - contains credentials / tokens for pipeline (`vars.yml` template)  
+
+`vars.yml` template:
+```
+ce-dockerhub-id: <dockerhubusername>
+ce-dockerhub-token: <dockerhubpassword>
+github-token: <githubtoken>
+ce-github-private-key: |
+
+-----BEGIN OPENSSH PRIVATE KEY-----
+
+........
+
+-----END OPENSSH PRIVATE KEY-----
+```
+
+**.. and pipeline variables (`--var`):**
+- book-repo - name of the Github book repository, content book repos are denoted with "osbooks" 
+- archive-server - archive server the content will come from
+- sync-branch - branch of the book repository to sync content to
+
+## Development & Testing
+
+Following steps can be run manually to create a sync Docker image containing the `sync.sh` script and update the repo:
 
 ```sh
-docker build . -t git-storage-sync
-docker run --rm -v $here:/output -e OUTPUT=/output -e git-storage-sync
+content-syncronizer$ docker build . -t git-storage-sync
+content-syncronizer$ docker run --rm -v $here:/output -e OUTPUT=/output -e git-storage-sync
 ```
+
 `$here` Local location of script output, ideally the book repo you're trying to update
 
 There are also unit tests for the sync scripts which can eventually be integrated with CI, but for the time being can be run manually:
 
 ```sh
-pip install -r requirements.txt
-pip install pytest pytest-mock
-pytest test_sync_scripts.py
-```
-## Development
-
-To run the pipeline locally, populate the following in a `vars.yml` :
-```
-ce-dockerhub-id: dockerhubusername
-ce-dockerhub-token: dockerhubpassword
-ce-github-private-key: |
-        -----BEGIN OPENSSH PRIVATE KEY-----
-        ....
-        -----END OPENSSH PRIVATE KEY-----
-```
-
-Then, set your pipeline with `vars.yml` containing your credentials.
-and params: 
-`osbook-git-uri`: git uri of book you want to sync
-`sync-branch`: branch you want to sync
-`from-server`: with which archive server
-```
-$ fly -t local-concourse set-pipeline -p sync-content -c pipeline-sync.yml -l vars.yml -v osbook-git-uri=git@github.com:openstax/osbooks-college-algebra-bundle.git -v sync-branch=staging -v from-server=cnx.org
-$ fly -t local-concourse unpause-pipeline -p sync-content
+content-syncronizer$ pip install -r requirements.txt
+content-syncronizer$ pip install pytest pytest-mock
+content-syncronizer$ pytest test_sync_scripts.py
 ```
