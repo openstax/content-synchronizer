@@ -4,6 +4,8 @@ from lxml import etree
 
 # We don't want to remove tail text for the processing instruction so a special method is needed
 # Credit: SO user Messa @ https://stackoverflow.com/questions/7981840/how-to-remove-an-element-in-lxml
+
+
 def remove_element(el):
     parent = el.getparent()
     if el.tail.strip():
@@ -46,3 +48,7 @@ def main():
 
     for collection_file in collection_files:
         remove_processing_instructions(collection_file)
+
+
+if __name__ == "__main__":
+    main()
