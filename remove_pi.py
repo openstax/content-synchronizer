@@ -8,7 +8,7 @@ from lxml import etree
 
 def remove_element(el):
     parent = el.getparent()
-    if el.tail.strip():
+    if el.tail and el.tail.strip():
         prev = el.getprevious()
         if prev:
             prev.tail = (prev.tail or '') + el.tail
