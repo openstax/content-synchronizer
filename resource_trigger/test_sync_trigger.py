@@ -65,12 +65,12 @@ def test_github_request(requests_mock):
     """
     content_encoded = sync_file.encode('utf-8')
     link = f"https://raw.githubusercontent.com/openstax/{repo}/main/archive-syncfile"
-    boop = requests_mock.get(link, content=content_encoded)
+    requests_mock.get(link, content=content_encoded)
     decoded_sync_file = check.get_sync_file(token, repo)
     assert decoded_sync_file == sync_file
 
 
-def test_archive_request(mocker, requests_mock):
+def test_version_format(mocker, requests_mock):
     uuid = BOOK_UUIDS['col11759']
     sync_file = """
     college-algebra col11759
@@ -79,6 +79,7 @@ def test_archive_request(mocker, requests_mock):
         'check.get_sync_file',
         return_value=sync_file
     )
+
     instream = fake_input_stream()
     content = json.dumps({'headVersion': '6.5'})
     content_encoded = content.encode('utf-8')
@@ -88,29 +89,7 @@ def test_archive_request(mocker, requests_mock):
     assert versions == 'col11759@6.5'
 
 
-def test_version_format(mocker):
-
-    sync_file = """
-        college-algebra col11759
-        precalculus col11667
-        algebra-and-trigonometry col11758
-        precalculus-coreq col32026
-        """
-
-    mocker.patch(
-        'check.get_sync_file',
-        return_value=sync_file
-    )
-
-    instream = fake_input_stream()
-    versions = check._check(instream)[0]['versions']
-    number_of_actual_versions = len(versions.split(','))
-    number_of_expected_versions = 4
-    assert number_of_expected_versions == number_of_actual_versions
-
-
 def test_check_type(mocker):
-
     sync_file = """
         college-algebra col11759
         precalculus col11667
