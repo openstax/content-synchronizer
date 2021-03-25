@@ -89,12 +89,10 @@ def test_version_format(mocker, requests_mock):
     assert versions == 'col11759@6.5'
 
 
-def test_check_type(mocker):
+def test_check_type(mocker, requests_mock):
+    uuid = BOOK_UUIDS['col11759']
     sync_file = """
         college-algebra col11759
-        precalculus col11667
-        algebra-and-trigonometry col11758
-        precalculus-coreq col32026
         """
 
     mocker.patch(
@@ -103,4 +101,8 @@ def test_check_type(mocker):
     )
 
     instream = fake_input_stream()
+    content = json.dumps({'headVersion': '6.5'})
+    content_encoded = content.encode('utf-8')
+    link = f"https://archive-qa.cnx.org/extras/{uuid}"
+    requests_mock.get(link, content=content_encoded)
     assert isinstance(check._check(instream), list) == True
