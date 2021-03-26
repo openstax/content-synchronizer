@@ -10,10 +10,12 @@ Once a pipeline is set up - A pipeline gets triggered when a book is published, 
 ## Quick Start
 Note: Book repository must contain an `archive-syncfile`, example can be found on [osbooks-college-algebra-bundle](https://github.com/openstax/osbooks-college-algebra-bundle/) book repo.
 
+Assumes you have the [fly cli](https://concourse-ci.org/fly.html) for Concourse and [fly targets](https://concourse-ci.org/fly.html#fly-login) set up with proper concourse-urls.
+
 ### Use the Concourse `fly cli` to set up a pipeline to sync book repository.
 
 ```
-fly -t opsx-concourse set-pipeline \
+fly -t concourse-target set-pipeline \
 --config pipeline-sync.yml \
 --pipeline sync-pipeline \
 --load-vars-from vars.yml \
@@ -23,7 +25,7 @@ fly -t opsx-concourse set-pipeline \
 
 Command Shorthand:
 ```
-fly -t local-concourse sp -c pipeline-sync.yml -p sync-pipeline -l vars.yml -v book-repo=osbooks-college-algebra-bundle -v archive-server=qa
+fly -t concourse-target sp -c pipeline-sync.yml -p sync-pipeline -l vars.yml -v book-repo=osbooks-college-algebra-bundle -v archive-server=qa
 ```
 
 **Where..**
