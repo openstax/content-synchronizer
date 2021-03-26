@@ -12,7 +12,7 @@ def get_sync_file(token, repo):
     resp = requests.get(endpoint, headers=headers)
 
     if resp.status_code != 200:
-        msg(f"Error: Unable to get archive-syncfile for {repo}")
+        msg("Error: Unable to get archive-syncfile for {}", repo)
         sys.exit(1)
 
     sync_file = resp.content.decode()
@@ -27,7 +27,7 @@ def _check(instream):
     server = source.get('archive_server')
     archive_server = determine_archive_server(server)
 
-    msg(f"Syncing {repo} with {archive_server}...")
+    msg("Syncing {} with {}...", repo, archive_server)
 
     sync_file = get_sync_file(token, repo)
     legacy_ids = parse_legacy_ids(sync_file)
@@ -38,13 +38,13 @@ def _check(instream):
         try:
             uuid = BOOK_UUIDS[legacy_id]
         except KeyError as error:
-            msg(error, file=sys.stderr)
+            msg("Error: {}", error)
             sys.exit(1)
         link = f"https://{archive_server}/extras/{uuid}"
         resp = requests.get(link)
 
         if resp.status_code != 200:
-            msg(f"Error: Unable to get version for {uuid}")
+            msg("Error: Unable to get version for {}", uuid)
             sys.exit(1)
 
         content = json.loads(resp.content)

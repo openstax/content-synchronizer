@@ -36,7 +36,7 @@ fly -t local-concourse sp -c pipeline-sync.yml -p sync-pipeline -l vars.yml -v b
 ce-dockerhub-id: <dockerhubusername>
 ce-dockerhub-token: <dockerhubpassword>
 github-token: <githubtoken>
-ce-github-private-key: |
+github-private-key: |
 
 -----BEGIN OPENSSH PRIVATE KEY-----
 

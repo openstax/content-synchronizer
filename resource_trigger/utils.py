@@ -74,7 +74,14 @@ Additional_UUIDS = {
     "col32026": "507feb1e-cfff-4b54-bc07-d52636cecfe3"
 }
 
+polish_physics_UUIDS = {
+    "col23946": "4eaa8f03-88a8-485a-a777-dd3602f6c13e",
+    "col25244": "16ab5b96-4598-45f9-993c-b8d78d82b0c6",
+    "col25571": "bb62933e-f20a-4ffc-90aa-97b36c296c3e",
+}
+
 BOOK_UUIDS.update(Additional_UUIDS)
+BOOK_UUIDS.update(polish_physics_UUIDS)
 
 
 def msg(msg, *args, **kwargs):
