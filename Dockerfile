@@ -3,7 +3,7 @@ FROM python:3.7-slim
 LABEL maintainer="OpenStax Content Engineering"
 
 RUN apt update
-RUN apt install -y build-essential wget git
+RUN apt install -y build-essential wget git xmlstarlet
 
 ENV JQ_VERSION='1.6'
 ENV CODE_DIR=/code/scripts

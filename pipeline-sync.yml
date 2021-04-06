@@ -57,7 +57,7 @@ jobs:
 
               cd $OSBOOK
               bash $CODE_DIR/sync.sh
-              git config --global user.email "openstax@openstax.com"
+              git config --global user.email "openstax@openstax.org"
               git config --global user.name "Content Synchronizer"
               git add .
               git commit -m "sync with archive $SERVER"
