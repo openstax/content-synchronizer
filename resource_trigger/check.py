@@ -8,12 +8,20 @@ from utils import msg, parse_legacy_ids, determine_archive_server, BOOK_UUIDS
 
 def get_sync_file(token, repo):
     headers = {'Authorization': 'token ' + token}
-    endpoint = f"https://raw.githubusercontent.com/openstax/{repo}/main/archive-syncfile"
-    resp = requests.get(endpoint, headers=headers)
+    repository = f"https://raw.githubusercontent.com/openstax/{repo}/main"
 
-    if resp.status_code != 200:
-        msg("Error: Unable to get archive-syncfile for {}", repo)
-        sys.exit(1)
+    try:
+        endpoint = f"{repository}/META-INF/books.xml"
+        resp = requests.get(endpoint, headers=headers)
+        resp.raise_for_status()
+    except requests.exceptions.HTTPError:
+        try:
+            endpoint = f"{repository}/archive-syncfile"
+            resp = requests.get(endpoint, headers=headers)
+            resp.raise_for_status()
+        except requests.exceptions.HTTPError:
+            msg("Error: missing '/META-INF/books.xml' or 'archive-syncfile' from {}", repo)
+            sys.exit(1)
 
     sync_file = resp.content.decode()
     return sync_file
