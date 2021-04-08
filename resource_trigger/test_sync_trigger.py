@@ -66,6 +66,16 @@ def test_github_request(requests_mock):
     content_encoded = sync_file.encode('utf-8')
     link = f"https://raw.githubusercontent.com/openstax/{repo}/main/archive-syncfile"
     requests_mock.get(link, content=content_encoded)
+
+    meta_inf = """
+    <container xmlns="https://openstax.org/namespaces/book-container" version="1">\n
+    <book slug="college-algebra" collection-id="col11759" href="../collections/college-algebra.collection.xml" />\n
+    </container>\n
+    """
+    meta_content_encoded = meta_inf.encode('utf-8')
+    meta_link = f"https://raw.githubusercontent.com/openstax/{repo}/main/META-INF/books.xml"
+    requests_mock.get(meta_link, content=meta_content_encoded, status_code=404)
+
     decoded_sync_file = check.get_sync_file(token, repo)
     assert decoded_sync_file == sync_file
 
