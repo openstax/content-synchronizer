@@ -192,7 +192,7 @@ def test_update_metadata(tmp_path, mocker):
 
     module_cnxml = module_dir / "index.cnxml"
     module_cnxml_content = """
-        <document xmlns="http://cnx.rice.edu/cnxml">
+        <document xmlns="http://cnx.rice.edu/cnxml" id="new" cnxml-version="0.7" module-id="new">
             <title>Test module</title>
             <metadata xmlns:md="http://cnx.rice.edu/mdml" mdml-version="0.5">
                 <!-- Some comment -->
@@ -319,7 +319,7 @@ def test_update_metadata(tmp_path, mocker):
     expected = """
         <document xmlns="http://cnx.rice.edu/cnxml">
             <title>Test module</title>
-            <metadata xmlns:md="http://cnx.rice.edu/mdml" mdml-version="0.5">
+            <metadata xmlns:md="http://cnx.rice.edu/mdml">
                 <md:content-id>m00001</md:content-id>
                 <md:title>Test module</md:title>
                 <md:abstract/>
