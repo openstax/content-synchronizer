@@ -9,6 +9,15 @@ from lxml import etree
 NS_MDML = "http://cnx.rice.edu/mdml"
 NS_CNXML = "http://cnx.rice.edu/cnxml"
 NS_COLLXML = "http://cnx.rice.edu/collxml"
+NS_SYS = "http://cnx.rice.edu/system-info"
+
+XPATH_NSMAP_BASIC = {
+    'md': NS_MDML,
+    'cnxml': NS_CNXML,
+    'col': NS_COLLXML,
+    'sys': NS_SYS
+}
+
 MODULE_METADATA_ACCEPT_TAGS = [
     f"{{{NS_MDML}}}title",
     f"{{{NS_MDML}}}abstract",
@@ -34,6 +43,18 @@ MODULE_DOCUMENT_ATTRIBUTE_DELETE = [
 MODULE_METADATA_ATTRIBUTE_DELETE = [
     "mdml-version"
 ]
+# List of tuples where tuple[0] is xpath using XPATH_NS_BASIC for namespace prefixes
+# and tuple[1] is a list of qualified names of attributes to remove
+# If tuple[1] is set to REMOVE_ELEMENT, remove the entire element
+REMOVE_ELEMENT = '__delete-this-element__'
+COLLECTION_REMOVE_ARBITRARY = [
+    ('//col:module', [
+        'version',
+        'repository',
+        f'{{{NS_SYS}}}version-at-this-collection-version'
+    ]),
+    ('//col:parameters', REMOVE_ELEMENT)
+]
 
 
 def filter_accepted_tags(metadata, accept_tags, md_namespace):
@@ -58,7 +79,7 @@ def remove_attributes(element, attributes):
             del element.attrib[attribute]
 
 
-def update_xml_metadata(input_files, accept_tags, added_tags, removed_attrs_root, removed_attrs_meta, md_namespace):
+def update_xml_metadata(input_files, accept_tags, added_tags, removed_attrs_root, removed_attrs_meta, remove_arbitrary, md_namespace):
     """Update a list of module or collection files given a list of input_files
     where each entry is a (xml, metadata) tuple
     """
@@ -79,6 +100,16 @@ def update_xml_metadata(input_files, accept_tags, added_tags, removed_attrs_root
 
         remove_attributes(doc_root, removed_attrs_root)
         remove_attributes(doc_meta, removed_attrs_meta)
+
+        for element_xpath, attribute_qnames in remove_arbitrary:
+            for element in xml_doc.xpath(element_xpath, namespaces=XPATH_NSMAP_BASIC):
+                if attribute_qnames == REMOVE_ELEMENT:
+                    element.getparent().remove(element)
+                    continue
+                for attr_qname in attribute_qnames:
+                    del element.attrib[attr_qname]
+
+        etree.cleanup_namespaces(xml_doc)
 
         with xml_file.open("wb") as outfile:
             xml_doc.write(outfile, encoding="utf-8", xml_declaration=False)
@@ -113,6 +144,7 @@ def main():
         MODULE_METADATA_ADDED_TAGS_FROM_JSON,
         MODULE_DOCUMENT_ATTRIBUTE_DELETE,
         MODULE_METADATA_ATTRIBUTE_DELETE,
+        [],
         NS_CNXML
     )
 
@@ -122,6 +154,7 @@ def main():
         COLLECTION_METADATA_ADDED_TAGS_FROM_JSON,
         [],
         [],
+        COLLECTION_REMOVE_ARBITRARY,
         NS_COLLXML
     )
 
