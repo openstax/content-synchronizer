@@ -59,7 +59,7 @@ Following steps can be run manually to create a sync Docker image containing the
 
 ```sh
 content-syncronizer$ docker build . -t git-storage-sync
-content-syncronizer$ docker run --rm -v $PWD:/output -e OUTPUT=/output git-storage-sync /code/scripts/sync.sh
+content-syncronizer$ docker run --rm -v $PWD:/output -w /output -e SERVER=cnx.org git-storage-sync /code/scripts/sync.sh
 ```
 
 `$here` Local location of script output, ideally the book repo you're trying to update
