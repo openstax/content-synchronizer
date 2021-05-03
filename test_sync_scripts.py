@@ -260,8 +260,8 @@ def test_update_metadata(tmp_path, mocker):
 
     collection_xml = collections_dir / f"{collection_name}.xml"
     collection_xml_content = """
-        <col:collection xmlns="http://cnx.rice.edu/collxml"
-            xmlns:col="http://cnx.rice.edu/collxml">
+        <col:collection xmlns="http://cnx.rice.edu/collxml" xmlns:md="http://cnx.rice.edu/mdml"
+            xmlns:col="http://cnx.rice.edu/collxml" xmlns:cnxorg="http://cnx.rice.edu/system-info">
             <metadata xmlns:md="http://cnx.rice.edu/mdml" mdml-version="0.5">
                 <!-- Some comment -->
                 <md:repository>https://legacy.cnx.org/content</md:repository>
@@ -306,6 +306,14 @@ def test_update_metadata(tmp_path, mocker):
                 <md:abstract/>
                 <md:language>en</md:language>
             </metadata>
+            <parameters>
+                <param name="print-style" value="my-print-style"/>
+            </parameters>
+            <content>
+                <module document="m00001" version="latest" repository="https://legacy.cnx.org/content" cnxorg:version-at-this-collection-version="1.4">
+                    <md:title>Test module</md:title>
+                </module>
+            </content>
         </col:collection>
     """
     collection_xml.write_text(collection_xml_content)
@@ -330,7 +338,7 @@ def test_update_metadata(tmp_path, mocker):
     _compare_xml_strings(module_cnxml.read_text(), expected)
 
     expected = """
-        <col:collection xmlns="http://cnx.rice.edu/collxml"
+        <col:collection xmlns="http://cnx.rice.edu/collxml" xmlns:md="http://cnx.rice.edu/mdml"
             xmlns:col="http://cnx.rice.edu/collxml">
             <metadata xmlns:md="http://cnx.rice.edu/mdml" mdml-version="0.5">
                 <md:content-id>col00001</md:content-id>
@@ -341,6 +349,11 @@ def test_update_metadata(tmp_path, mocker):
                 <md:uuid>6e9c4e99-1fe4-42e2-8268-8cb892f9602e</md:uuid>
                 <md:slug>alchemy-slug</md:slug>
             </metadata>
+            <content>
+                <module document="m00001">
+                    <md:title>Test module</md:title>
+                </module>
+            </content>
         </col:collection>
     """
     _compare_xml_strings(collection_xml.read_text(), expected)
