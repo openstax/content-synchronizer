@@ -45,8 +45,6 @@ rm -rf modules collections metadata media
 mkdir modules collections metadata media
 cat canonical-modules | awk '{ print "cp -r "$1"/"$2" modules/"; }' | xargs -I {} bash -c '{}'
 find modules/. -name .sha1sum | xargs rm
-python $CODE_DIR/remove_pi.py modules collections
-python $CODE_DIR/override_module_titles.py modules collections
 python $CODE_DIR/consolidate_media.py modules media
 while read slug collid
 do
@@ -56,6 +54,8 @@ do
   jq --arg slug "$slug" '. + {slug: $slug}' "$slug/metadata.json" > "metadata/$slug.metadata.json"
   rm -rf ./"$slug"
 done < archive-syncfile
+python $CODE_DIR/remove_pi.py modules collections
+python $CODE_DIR/override_module_titles.py modules collections
 python $CODE_DIR/update_metadata.py modules collections metadata
 find modules/. -name metadata.json | xargs rm
 rm -rf ./metadata module-ids ./canonical-modules ./archive-syncfile
