@@ -4,9 +4,11 @@ import hashlib
 import consolidate_media
 import update_metadata
 import remove_pi
+import override_module_titles
 import json
 import io
 from lxml import etree
+import pytest
 
 
 def _compare_xml_strings(data, expected):
@@ -415,3 +417,148 @@ def test_remove_pi(tmp_path, mocker):
             </col:collection>
     """
     _compare_xml_strings(collection_xml.read_text(), expected)
+
+
+def test_override_module_titles(tmp_path, mocker):
+    """Test override_module_titles script"""
+    modules_dir = tmp_path / "modules"
+    module1_name = "m00001"
+    module1_dir = modules_dir / module1_name
+    module1_dir.mkdir(parents=True)
+
+    module1_cnxml = module1_dir / "index.cnxml"
+    module1_cnxml_content = """
+        <document xmlns="http://cnx.rice.edu/cnxml">
+            <title>Original title 1</title>
+            <metadata xmlns:md="http://cnx.rice.edu/mdml">
+                <md:content-id>m00001</md:content-id>
+            </metadata>
+            <content>
+            Some Content
+            </content>
+        </document>
+    """
+    module1_cnxml.write_text(module1_cnxml_content)
+
+    module2_name = "m00002"
+    module2_dir = modules_dir / module2_name
+    module2_dir.mkdir(parents=True)
+
+    module2_cnxml = module2_dir / "index.cnxml"
+    module2_cnxml_content = """
+        <document xmlns="http://cnx.rice.edu/cnxml">
+            <title>Original title 2</title>
+            <metadata xmlns:md="http://cnx.rice.edu/mdml">
+                <md:content-id>m00002</md:content-id>
+            </metadata>
+            <content>
+            Some Content
+            </content>
+        </document>
+    """
+    module2_cnxml.write_text(module2_cnxml_content)
+
+    module3_name = "m00003"
+    module3_dir = modules_dir / module3_name
+    module3_dir.mkdir(parents=True)
+
+    module3_cnxml = module3_dir / "index.cnxml"
+    module3_cnxml_content = """
+        <document xmlns="http://cnx.rice.edu/cnxml">
+            <title>Original title 3</title>
+            <metadata xmlns:md="http://cnx.rice.edu/mdml">
+                <md:content-id>m00003</md:content-id>
+            </metadata>
+            <content>
+            Some Content
+            </content>
+        </document>
+    """
+    module3_cnxml.write_text(module3_cnxml_content)
+
+    collections_dir = tmp_path / "collections"
+    collections_dir.mkdir()
+    collection_name = "alchemy"
+
+    collection_xml = collections_dir / f"{collection_name}.collection.xml"
+    collection_xml_content = """
+        <col:collection xmlns="http://cnx.rice.edu/collxml"
+            xmlns:md="http://cnx.rice.edu/mdml"
+            xmlns:col="http://cnx.rice.edu/collxml">
+            <col:content>
+                <col:module document="m00001">
+                    <md:title>Desired title 1</md:title>
+                </col:module>
+                <col:module document="m00002">
+                    <md:title>Desired title 2</md:title>
+                </col:module>
+            </col:content>
+        </col:collection>
+    """
+    collection_xml.write_text(collection_xml_content)
+
+    mocker.patch(
+        "sys.argv",
+        ["", modules_dir, collections_dir]
+    )
+    override_module_titles.main()
+
+    expected1 = """
+        <document xmlns="http://cnx.rice.edu/cnxml">
+            <title>Desired title 1</title>
+            <metadata xmlns:md="http://cnx.rice.edu/mdml">
+                <md:content-id>m00001</md:content-id>
+            </metadata>
+            <content>
+            Some Content
+            </content>
+        </document>
+    """
+    _compare_xml_strings(module1_cnxml.read_text(), expected1)
+
+    expected2 = """
+        <document xmlns="http://cnx.rice.edu/cnxml">
+            <title>Desired title 2</title>
+            <metadata xmlns:md="http://cnx.rice.edu/mdml">
+                <md:content-id>m00002</md:content-id>
+            </metadata>
+            <content>
+            Some Content
+            </content>
+        </document>
+    """
+    _compare_xml_strings(module2_cnxml.read_text(), expected2)
+
+    _compare_xml_strings(module3_cnxml.read_text(), module3_cnxml_content)
+
+    # Test for exception case
+
+    collection2_name = "alchemy2"
+
+    collection2_xml = collections_dir / f"{collection2_name}.collection.xml"
+    collection2_xml_content = """
+        <col:collection xmlns="http://cnx.rice.edu/collxml"
+            xmlns:md="http://cnx.rice.edu/mdml"
+            xmlns:col="http://cnx.rice.edu/collxml">
+            <col:content>
+                <col:module document="m00001">
+                    <md:title>Desired title 1</md:title>
+                </col:module>
+                <col:module document="m00002">
+                    <md:title>Different desired title 2</md:title>
+                </col:module>
+            </col:content>
+        </col:collection>
+    """
+    collection2_xml.write_text(collection2_xml_content)
+
+    mocker.patch(
+        "sys.argv",
+        ["", modules_dir, collections_dir]
+    )
+
+    with pytest.raises(
+        Exception,
+        match='Found conflicting titles for m00002'
+    ):
+        override_module_titles.main()

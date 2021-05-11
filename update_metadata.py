@@ -4,19 +4,7 @@ import sys
 import json
 from pathlib import Path
 from lxml import etree
-
-
-NS_MDML = "http://cnx.rice.edu/mdml"
-NS_CNXML = "http://cnx.rice.edu/cnxml"
-NS_COLLXML = "http://cnx.rice.edu/collxml"
-NS_SYS = "http://cnx.rice.edu/system-info"
-
-XPATH_NSMAP_BASIC = {
-    'md': NS_MDML,
-    'cnxml': NS_CNXML,
-    'col': NS_COLLXML,
-    'sys': NS_SYS
-}
+from namespaces import NS_MDML, NS_CNXML, NS_COLLXML, NS_SYS, XPATH_NSMAP_BASIC
 
 MODULE_METADATA_ACCEPT_TAGS = [
     f"{{{NS_MDML}}}title",
