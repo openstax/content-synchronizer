@@ -432,6 +432,7 @@ def test_override_module_titles(tmp_path, mocker):
             <title>Original title 1</title>
             <metadata xmlns:md="http://cnx.rice.edu/mdml">
                 <md:content-id>m00001</md:content-id>
+                <md:title>Original title 1</md:title>
             </metadata>
             <content>
             Some Content
@@ -508,6 +509,7 @@ def test_override_module_titles(tmp_path, mocker):
             <title>Desired title 1</title>
             <metadata xmlns:md="http://cnx.rice.edu/mdml">
                 <md:content-id>m00001</md:content-id>
+                <md:title>Desired title 1</md:title>
             </metadata>
             <content>
             Some Content
