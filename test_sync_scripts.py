@@ -348,6 +348,7 @@ def test_update_metadata(tmp_path, mocker):
                 <md:license url="http://creativecommons.org/licenses/by/4.0/">
                     Creative Commons Attribution License 4.0
                 </md:license>
+                <md:language>en</md:language>
                 <md:uuid>6e9c4e99-1fe4-42e2-8268-8cb892f9602e</md:uuid>
                 <md:slug>alchemy-slug</md:slug>
             </metadata>
