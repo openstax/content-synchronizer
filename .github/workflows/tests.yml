@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-18.04
     strategy:
       matrix:
-        python-version: ["3.6"]
+        python-version: ['3.6']
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
@@ -23,7 +23,7 @@ jobs:
         run: python -c "import sys; print(sys.version)"
       - name: Test
         run: |
-          pip install -r requirements.txt
+          pip install -r resource-synchronizer/requirements.txt
           pip install pytest pytest-mock requests-mock
-          pytest test_sync_scripts.py
+          pytest resource-synchronizer/test_sync_scripts.py
           pytest resource_trigger/test_sync_trigger.py
