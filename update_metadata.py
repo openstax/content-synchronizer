@@ -17,7 +17,8 @@ MODULE_METADATA_ADDED_TAGS_FROM_JSON = {
 COLLECTION_METADATA_ACCEPT_TAGS = [
     f"{{{NS_MDML}}}title",
     f"{{{NS_MDML}}}content-id",
-    f"{{{NS_MDML}}}license"
+    f"{{{NS_MDML}}}license",
+    f"{{{NS_MDML}}}language"
 ]
 COLLECTION_METADATA_ADDED_TAGS_FROM_JSON = {
     "id": "uuid",
