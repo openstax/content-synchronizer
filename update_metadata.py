@@ -41,7 +41,8 @@ COLLECTION_REMOVE_ARBITRARY = [
         'repository',
         f'{{{NS_SYS}}}version-at-this-collection-version'
     ]),
-    ('//col:parameters', REMOVE_ELEMENT)
+    ('//col:parameters', REMOVE_ELEMENT),
+    ('//col:module/md:title', REMOVE_ELEMENT)
 ]
 
 
@@ -92,7 +93,11 @@ def update_xml_metadata(input_files, accept_tags, added_tags, removed_attrs_root
         for element_xpath, attribute_qnames in remove_arbitrary:
             for element in xml_doc.xpath(element_xpath, namespaces=XPATH_NSMAP_BASIC):
                 if attribute_qnames == REMOVE_ELEMENT:
-                    element.getparent().remove(element)
+                    parent = element.getparent()
+                    parent.remove(element)
+                    if len(parent.getchildren()) == 0:
+                        # Ensure empty elements are collapsed
+                        parent.text = None
                     continue
                 for attr_qname in attribute_qnames:
                     del element.attrib[attr_qname]

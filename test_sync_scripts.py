@@ -340,7 +340,7 @@ def test_update_metadata(tmp_path, mocker):
     _compare_xml_strings(module_cnxml.read_text(), expected)
 
     expected = """
-        <col:collection xmlns="http://cnx.rice.edu/collxml" xmlns:md="http://cnx.rice.edu/mdml"
+        <col:collection xmlns="http://cnx.rice.edu/collxml"
             xmlns:col="http://cnx.rice.edu/collxml">
             <metadata xmlns:md="http://cnx.rice.edu/mdml" mdml-version="0.5">
                 <md:content-id>col00001</md:content-id>
@@ -352,9 +352,7 @@ def test_update_metadata(tmp_path, mocker):
                 <md:slug>alchemy-slug</md:slug>
             </metadata>
             <content>
-                <module document="m00001">
-                    <md:title>Test module</md:title>
-                </module>
+                <module document="m00001"/>
             </content>
         </col:collection>
     """
