@@ -1,14 +1,27 @@
 # content-synchronizer
 
-This repository holds scripts, images, and a pipeline configuration file used to sync book content from an **cnx archive server** to a **Github book repository**.
+This repository holds scripts, docker resources, and a pipeline configuration file used to sync book content from an **CNX Archive Server** to a **Github Book Repository**.
 
-The content-synchronizer is a concourse pipeline (`pipeline-sync.yml`). Once a book repository is created and contains an *archive-syncfile* a pipeline can be set up (using the **Quick Start** steps below) to start the syncing process.
+The content-synchronizer is a concourse pipeline (`pipeline-sync.yml`).
+
+Once a book repository is created by a content manager and contains an _archive-syncfile_ or a _META-INF/books.xml_ a pipeline can be set up using the **_Quick Start_** steps below to start the syncing process.
 
 Once a book repository is ready to be updated/ edited using [POET](https://github.com/openstax/poet) syncing will cease.
+
 ## How it Works
-Once a pipeline is set up - A pipeline gets triggered when a book is published, a new version of the book is detected. A job will start to pull the content from the specified archive server (`archive-server`) to the specified book repository branch (`sync-branch`).
+
+When a pipeline is set up (**_Quick Start_** steps) a job is triggered when a new version of the book is detected (by resource-trigger).
+
+The job will (use the resource-synchronizer to):
+
+- pull content from specified archive server
+- set content to match the schema for book repository
+
+then push to respective book repository's main branch.
+
 ## Quick Start
-Note: Book repository must contain an `archive-syncfile`, example can be found on [osbooks-college-algebra-bundle](https://github.com/openstax/osbooks-college-algebra-bundle/) book repo.
+
+Note: Book repository must contain an `archive-syncfile`or a `META-INF/books.xml`, example can be found on [osbooks-college-algebra-bundle](https://github.com/openstax/osbooks-college-algebra-bundle/) book repo.
 
 Assumes you have the [fly cli](https://concourse-ci.org/fly.html) for Concourse and [fly targets](https://concourse-ci.org/fly.html#fly-login) set up with proper concourse-urls.
 
@@ -24,16 +37,19 @@ fly -t concourse-target set-pipeline \
 ```
 
 Command Shorthand:
+
 ```
 fly -t concourse-target sp -c pipeline-sync.yml -p sync-pipeline -l vars.yml -v book-repo=osbooks-college-algebra-bundle -v archive-server=qa
 ```
 
 **Where..**
+
 - `--config` - pipeline configuration file
 - `--pipeline` - name of pipeline
-- `--load-vars-from` - contains credentials / tokens for pipeline (`vars.yml` template)  
+- `--load-vars-from` - contains credentials / tokens for pipeline (`vars.yml` template)
 
 `vars.yml` template:
+
 ```
 ce-dockerhub-id: <dockerhubusername>
 ce-dockerhub-token: <dockerhubpassword>
@@ -48,26 +64,98 @@ github-private-key: |
 ```
 
 **.. and pipeline variables (`--var`):**
-- book-repo - name of the Github book repository, content book repos are denoted with "osbooks" 
+
+- book-repo - name of the Github book repository, content book repos are denoted with "osbooks"
 - archive-server - archive server the content will come from
 - sync-branch - branch of the book repository to sync content to
 
-## Development & Testing
+---
 
-### Sync Script
-Following steps can be run manually to create a sync Docker image containing the `sync.sh` script and update the repo:
+## Process for Existing Archive Books
 
-```sh
-content-syncronizer$ docker build . -t git-storage-sync
-content-syncronizer$ docker run --rm -v $PWD:/output -w /output -e SERVER=cnx.org git-storage-sync /code/scripts/sync.sh
-```
+Only pertains to books that exist in Archive and need to be moved to Github.
 
-`$here` Local location of script output, ideally the book repo you're trying to update
+### To Sync
 
-There are also unit tests for the sync scripts which can eventually be integrated with CI, but for the time being can be run manually:
+Step 1 - (CM) Start Process to Sync:
 
-```sh
-content-syncronizer$ pip install -r requirements.txt
-content-syncronizer$ pip install pytest pytest-mock
-content-syncronizer$ pytest test_sync_scripts.py
-```
+- Create the Github Content Repo:
+  - Add License file
+  - Add META-ING/books.xml
+  - Set correct access permissions
+  - Make Repository Private
+- Create Github Issue Card for CE:
+  - Title: Sync Content Repo: Repo-Name
+  - Include:
+    - Link to Github Content Repo
+    - One Github Content Repo per Github Issue Card
+    - Acceptance Criteria:
+      - [Set up sync pipeline](https://github.com/openstax/content-synchronizer#quick-start)
+      - Initial content sync is successful
+      - Pipeline is linked in issue
+
+Step 2 - (CE) Sync Content Repository:
+
+- Complete Acceptance Criteria in Card
+- "CE: Github Repo Stable Sync" with date / link to pipeline updated by Tester (Otto)
+
+### To Unsync
+
+Step 1 - (CM) Start Process to Unsync:
+
+- Create Github Issue Card for CE:
+  - Title: Unsync Content Repo: **Repo-Name**
+  - Description:
+    - Link to Github Content Repo
+    - One Github Content Repo per Github Issue Card
+    - Acceptance Criteria:
+      - Destroy sync pipeline on concourse-v6
+      - Announce in #books-and-candles that updates can be made in POET
+      - Update Transition Plan Spreadsheet: Column "POET Editing Start Date"
+
+Step 2 - (CE) Unsync Content Repository:
+
+- Complete Acceptance Criteria in Card
+
+---
+
+## Process for New Book Repos
+
+New books that do not exist in Archive, therefore no syncing needed, but will need minimum requirements for POET to work.
+
+Step 1 (CM) - Create Seed Content Repository:
+
+- Responsible Party: CMs
+  - Create the Github Repo in Github
+    - Add License file
+    - Add META-ING/books.xml
+    - Set correct access permissions
+    - Make Repository Private
+    - Add Vscode settings
+    - Add Canonical.json
+    - Add collections/collection.xml
+    - Add media/<any_file>
+
+* Note: We do not know if POET requires us to have `modules/` directory - case has not been tested yet.
+
+---
+
+## Resources:
+
+- [Transition Plan](https://docs.google.com/spreadsheets/d/1qbkcpdpION-uN8GWW3zpanpunq4pjwqmVDGPOBhNW-8/edit#gid=0)
+- [Minimum Requirement for POET (example repository)](https://github.com/philschatz/tiny-book)
+- [First Issue for POET repos](https://github.com/openstax/cnx/issues/1462)
+
+MISC NOTES:
+Notables to answer - maybe:
+While some books are in the phase of continuous syncing from archive, changes can be made to the repo that will require some migration. Give examples, these will be dealt as migration issues.
+Migration: Restructure of book to take place - https://github.com/openstax/cnx/issues/1468
+Note: Syncing overrides structure if not unsynced
+
+Moves to POET only:
+Ensure content version in repo (aka version last synced with archive) is correct
+CM will start the unsyncing process
+Steps:
+Refer to issue - Manual removing of any leftover processing collation information “<?.....?>”, knowns:
+Polish bundle, because wrong directory
+Statistics High School, because `<!----` denoted before “<?...”
