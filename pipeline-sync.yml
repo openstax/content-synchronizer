@@ -41,7 +41,7 @@ jobs:
             type: registry-image
             source:
               <<: *docker-credentials
-              repository: openstax/content-synchronizer
+              repository: bn16/content-synchronizer
               tag: main
           inputs:
             - name: ((book-repo))
@@ -59,6 +59,7 @@ jobs:
 
                 cd $OSBOOK
                 bash $CODE_DIR/sync.sh
+                python /code/scripts/poet-ready.py
                 git config --global user.email "openstax@openstax.org"
                 git config --global user.name "Content Synchronizer"
                 git add .
