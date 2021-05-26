@@ -23,4 +23,4 @@ RUN wget --no-check-certificate https://raw.githubusercontent.com/stedolan/jq/ma
 
 RUN pip install -r requirements.txt
 
-COPY ./*.py ./sync.sh ./settings.json /code/scripts/
+COPY ./*.py ./sync.sh ./poet.json /code/scripts/
