@@ -8,10 +8,12 @@ CODE_DIR = os.environ.get('CODE_DIR')
 
 
 def cleanup():
+
     shutil.rmtree(RB_DIR)
 
 
 def rollback():
+    CODE_DIR = os.environ.get('CODE_DIR')
     try:
         shutil.rmtree('.vscode')
     except:
@@ -39,6 +41,7 @@ def rollback():
 
 def main():
     os.mkdir(RB_DIR)
+    CODE_DIR = os.environ.get('CODE_DIR')
     try:
         poet_files = f'{CODE_DIR}/poet.json'
         with open(poet_files, 'r') as pf:
@@ -50,11 +53,12 @@ def main():
         except FileNotFoundError:
             pass
 
-        with open('.gitignore', 'x') as f:
+        gitignore_path = os.path.join(CODE_DIR, '.gitignore')
+        with open(gitignore_path, 'x') as f:
             f.write('\n'.join(poet_files['gitignore']))
 
         # handling .vscode/settings.json
-        dest_dir = '.vscode'
+        dest_dir = os.path.join(CODE_DIR, '.vscode')
         try:
             shutil.move(dest_dir, RB_DIR)
         except FileNotFoundError:
@@ -69,11 +73,11 @@ def main():
 
         # handling readme
         try:
-            shutil.move('README.md', RB_DIR)
+            read_me = os.path.join(CODE_DIR, 'README.md')
+            shutil.move(read_me, RB_DIR)
         except FileNotFoundError:
             pass
 
-        raise
         cleanup()
     except:
         rollback()

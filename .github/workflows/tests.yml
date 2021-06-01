@@ -25,5 +25,6 @@ jobs:
         run: |
           pip install -r resource-synchronizer/requirements.txt
           pip install pytest pytest-mock requests-mock
+          cp resource-synchronizer/poet.json poet.json
           pytest resource-synchronizer/test_sync_scripts.py
           pytest resource-trigger/test_sync_trigger.py
