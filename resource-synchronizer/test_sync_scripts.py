@@ -10,7 +10,6 @@ import io
 from lxml import etree
 import pytest
 import poet_ready
-import os
 
 
 def _compare_xml_strings(data, expected):
@@ -581,8 +580,10 @@ def test_poet_ready(tmp_path, mocker):
     with open(poet_json, "x") as outfile:
         json.dump(pj, outfile)
 
-    repo_path = os.path.join(tmp_path, repo)
-    os.environ['CODE_DIR'] = repo_path
+    mocker.patch(
+        "sys.argv",
+        [repo_dir]
+    )
 
     poet_ready.main()
 

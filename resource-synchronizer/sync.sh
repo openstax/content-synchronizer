@@ -57,6 +57,7 @@ done < archive-syncfile
 python $CODE_DIR/remove_pi.py modules collections
 python $CODE_DIR/override_module_titles.py modules collections
 python $CODE_DIR/update_metadata.py modules collections metadata
+python $CODE_DIR/poet_ready.py $CODE_DIR
 find modules/. -name metadata.json | xargs rm
 rm -rf ./metadata module-ids ./canonical-modules ./archive-syncfile
 echo 'Done.'

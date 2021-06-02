@@ -2,18 +2,14 @@ import os
 import json
 import shutil
 import sys
-
-RB_DIR = 'rollback'
-CODE_DIR = os.environ.get('CODE_DIR')
+from pathlib import Path
 
 
-def cleanup():
+def cleanup(rollback_dir):
+    shutil.rmtree(rollback_dir)
 
-    shutil.rmtree(RB_DIR)
 
-
-def rollback():
-    CODE_DIR = os.environ.get('CODE_DIR')
+def rollback(code_dir, rollback_dir):
     try:
         shutil.rmtree('.vscode')
     except:
@@ -24,43 +20,44 @@ def rollback():
     except:
         pass
 
-    for root, dirs, files in os.walk(RB_DIR):
+    for root, dirs, files in os.walk(rollback_dir):
 
         for d in dirs:
             path_dir = os.path.join(root, d)
-            dest_path_dir = path_dir.replace(RB_DIR, CODE_DIR)
+            dest_path_dir = path_dir.replace(rollback_dir, code_dir)
             os.mkdir(dest_path_dir)
 
         for f in files:
             path_file = os.path.join(root, f)
-            dest_path_file = path_file.replace(RB_DIR, CODE_DIR)
+            dest_path_file = path_file.replace(rollback_dir, code_dir)
             shutil.copy2(path_file, dest_path_file)
 
     cleanup()
 
 
 def main():
-    os.mkdir(RB_DIR)
-    CODE_DIR = os.environ.get('CODE_DIR')
+    code_dir = Path(sys.argv[0]).resolve(strict=True)
+    rollback_dir = str(sys.argv[0])+'/rollback'
+    os.mkdir(rollback_dir)
     try:
-        poet_files = f'{CODE_DIR}/poet.json'
+        poet_files = f'{code_dir}/poet.json'
         with open(poet_files, 'r') as pf:
             poet_files = json.loads(pf.read())
 
         # handling .gitignore
         try:
-            shutil.move('.gitignore', RB_DIR)
+            shutil.move('.gitignore', rollback_dir)
         except FileNotFoundError:
             pass
 
-        gitignore_path = os.path.join(CODE_DIR, '.gitignore')
+        gitignore_path = os.path.join(code_dir, '.gitignore')
         with open(gitignore_path, 'x') as f:
             f.write('\n'.join(poet_files['gitignore']))
 
         # handling .vscode/settings.json
-        dest_dir = os.path.join(CODE_DIR, '.vscode')
+        dest_dir = os.path.join(code_dir, '.vscode')
         try:
-            shutil.move(dest_dir, RB_DIR)
+            shutil.move(dest_dir, rollback_dir)
         except FileNotFoundError:
             pass
 
@@ -73,15 +70,15 @@ def main():
 
         # handling readme
         try:
-            read_me = os.path.join(CODE_DIR, 'README.md')
-            shutil.move(read_me, RB_DIR)
+            read_me = os.path.join(code_dir, 'README.md')
+            shutil.move(read_me, rollback_dir)
         except FileNotFoundError:
             pass
 
-        cleanup()
+        cleanup(rollback_dir)
     except:
-        rollback()
-        sys.exit()
+        rollback(code_dir)
+        sys.exit(1)
 
 
 if __name__ == "__main__":
