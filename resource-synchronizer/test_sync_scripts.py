@@ -9,6 +9,7 @@ import json
 import io
 from lxml import etree
 import pytest
+import poet_ready
 
 
 def _compare_xml_strings(data, expected):
@@ -563,3 +564,30 @@ def test_override_module_titles(tmp_path, mocker):
         match='Found conflicting titles for m00002'
     ):
         override_module_titles.main()
+
+
+def test_poet_ready(tmp_path, mocker):
+    repo = "osbooks-business-law"
+    repo_dir = tmp_path / repo
+    repo_dir.mkdir()
+
+    poet_file = "poet.json"
+    poet_json = repo_dir / poet_file
+
+    with open(poet_file, 'r') as pf:
+        pj = json.loads(pf.read())
+
+    with open(poet_json, "x") as outfile:
+        json.dump(pj, outfile)
+
+    mocker.patch(
+        "sys.argv",
+        [repo_dir]
+    )
+
+    poet_ready.main()
+
+    gitignore = repo_dir / ".gitignore"
+    vscode_settings = repo_dir / ".vscode" / "settings.json"
+    assert (gitignore).exists()
+    assert (vscode_settings).exists()
