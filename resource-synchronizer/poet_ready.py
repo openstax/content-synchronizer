@@ -32,12 +32,12 @@ def rollback(code_dir, rollback_dir):
             dest_path_file = path_file.replace(rollback_dir, code_dir)
             shutil.copy2(path_file, dest_path_file)
 
-    cleanup()
+    cleanup(rollback_dir)
 
 
 def main():
-    code_dir = Path(sys.argv[0]).resolve(strict=True)
-    rollback_dir = str(sys.argv[0])+'/rollback'
+    code_dir = Path(sys.argv[1]).resolve(strict=True)
+    rollback_dir = str(sys.argv[1])+'/rollback'
     os.mkdir(rollback_dir)
     try:
         poet_files = f'{code_dir}/poet.json'
@@ -77,7 +77,7 @@ def main():
 
         cleanup(rollback_dir)
     except:
-        rollback(code_dir)
+        rollback(code_dir, rollback_dir)
         sys.exit(1)
 
 

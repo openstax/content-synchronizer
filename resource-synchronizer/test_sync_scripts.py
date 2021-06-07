@@ -582,7 +582,7 @@ def test_poet_ready(tmp_path, mocker):
 
     mocker.patch(
         "sys.argv",
-        [repo_dir]
+        ["", repo_dir]
     )
 
     poet_ready.main()
