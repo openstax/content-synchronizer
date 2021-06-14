@@ -585,9 +585,13 @@ def test_poet_ready(tmp_path, mocker):
         ["", repo_dir]
     )
 
+    import os
+    cwd = tmp_path / "current"
+    cwd.mkdir()
+    os.chdir(cwd)
     poet_ready.main()
 
-    gitignore = repo_dir / ".gitignore"
-    vscode_settings = repo_dir / ".vscode" / "settings.json"
+    gitignore = cwd / ".gitignore"
+    vscode_settings = cwd / ".vscode" / "settings.json"
     assert (gitignore).exists()
     assert (vscode_settings).exists()
