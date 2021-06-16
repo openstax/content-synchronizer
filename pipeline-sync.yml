@@ -41,7 +41,7 @@ jobs:
             type: registry-image
             source:
               <<: *docker-credentials
-              repository: bn16/content-synchronizer
+              repository: openstax/content-synchronizer
               tag: main
           inputs:
             - name: ((book-repo))
