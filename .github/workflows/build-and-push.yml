@@ -29,7 +29,6 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: ./resource-synchronizer
-          file: ./Dockerfile
           pull: true
           push: true
           tags: ${{ env.DOCKER_TAG }}
