@@ -17,7 +17,6 @@ jobs:
         run: |
           DOCKER_TAG=$(date '+%Y%m%d.%H%M%S')
           echo "DOCKER_TAG=$DOCKER_TAG" >> $GITHUB_ENV
-
       
       - name: Log in to Docker Hub
         uses: docker/login-action@v1
@@ -31,5 +30,5 @@ jobs:
           context: ./resource-synchronizer
           pull: true
           push: true
-          tags: ${{ env.DOCKER_TAG }}
+          tags: openstax/content-synchronizer:${{ env.DOCKER_TAG }}
       
