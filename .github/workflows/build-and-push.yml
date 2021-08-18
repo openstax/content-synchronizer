@@ -1,10 +1,8 @@
 name: Build and Push Image
 on:
-  # Remove pull request after testing has been done on PR
-  pull_request:
   push:
     branches:
-      - master
+      - main
 
 jobs:
   build_and_push:
@@ -31,4 +29,3 @@ jobs:
           pull: true
           push: true
           tags: openstax/content-synchronizer:${{ env.DOCKER_TAG }}
-      
