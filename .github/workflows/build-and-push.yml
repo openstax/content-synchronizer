@@ -1,0 +1,19 @@
+name: Build and Push Image
+on:
+  # Remove pull request after testing has been done on PR
+  pull_request:
+  push:
+    branches:
+      - master
+
+jobs:
+  push:
+    runs-on: ubuntu-latest
+  
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Build image
+        run: |
+          cd ./resource-synchronizer
+          docker build . --tag image --file Dockerfile
