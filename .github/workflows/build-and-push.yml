@@ -32,5 +32,5 @@ jobs:
           file: ./Dockerfile
           pull: true
           push: true
-          tag: ${{ env.DOCKER_TAG }}
+          tags: ${{ env.DOCKER_TAG }}
       
