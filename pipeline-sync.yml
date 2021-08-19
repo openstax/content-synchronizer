@@ -9,7 +9,7 @@ resource_types:
     source:
       <<: *docker-credentials
       repository: openstax/sync-resource
-      tag: main
+      tag: 20210819.163052
 
 resources:
   - name: version-checker
@@ -42,7 +42,7 @@ jobs:
             source:
               <<: *docker-credentials
               repository: openstax/content-synchronizer
-              tag: main
+              tag: 20210819.163052
           inputs:
             - name: ((book-repo))
           outputs:
