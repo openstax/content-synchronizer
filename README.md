@@ -139,6 +139,18 @@ Step 1 (CM) - Create Seed Content Repository:
 * Note: We do not know if POET requires us to have `modules/` directory - case has not been tested yet.
 
 ---
+## Releasing Changes and Updating Pipelines
+
+From time to time we'll need to update the scripts or the dependencies. Anytime there is a merge on the main branch a GitHub workflow will tag an image with a timestamp and push it to Dockerhub. 
+
+The following images are created from this repo:
+
+* [openstax/content-synchronizer](https://hub.docker.com/repository/docker/openstax/content-synchronizer)
+* [openstax/sync-resource](https://hub.docker.com/repository/docker/openstax/sync-resource)
+
+When there is a change this tag needs to be added to the pipeline files and `fly set-pipeline` needs to be executed to update any of the sync pipelines if we want them to have the latest changes. 
+
+---
 
 ## Resources:
 
