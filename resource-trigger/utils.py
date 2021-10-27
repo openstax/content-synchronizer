@@ -55,7 +55,10 @@ BOOK_UUIDS = {
     "col30939": "f0fa90be-fca8-43c9-9aad-715c0a2cee2b",
     "col31234": "4664c267-cd62-4a99-8b28-1cb9b3aee347",
     "col25448": "9ab4ba6d-1e48-486d-a2de-38ae1617ca84",
-    "col11992": "2e737be8-ea65-48c3-aa0a-9f35b4c6a966"
+    "col11992": "2e737be8-ea65-48c3-aa0a-9f35b4c6a966",
+    "col33393": "175c88b6-f89b-4eba-9514-bc45e2139a1d",
+    "col33604": "da02605d-6d69-447c-a9b9-caf06dc4f413",
+    "col33833": "b647a9b9-7631-45a1-a8e7-5acc3a44fc01"
 }
 
 # UUIDS from DB, HOLY GRAIL only contained legacy id
