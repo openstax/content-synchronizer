@@ -1,0 +1,41 @@
+name: sync-{{book-repo}}
+public: true
+plan:
+  - get: {{book-repo}}
+  - get: {{book-repo}}-version-checker
+    trigger: true
+    version: every
+  - task: sync-content
+    config:
+      platform: linux
+      image_resource:
+        type: registry-image
+        source:
+          username: ((ce-dockerhub-id))
+          password: ((ce-dockerhub-token))
+          repository: openstax/content-synchronizer
+          tag: 20211027.213953
+      inputs:
+        - name: {{book-repo}}
+      outputs:
+        - name: {{book-repo}}
+      params:
+        SERVER: {{archive-server}}
+        CODE_DIR: /code/scripts
+        OSBOOK: {{book-repo}}
+      run:
+        path: /bin/bash
+        args:
+          - '-cxe'
+          - |-
+            cd $OSBOOK
+            bash $CODE_DIR/sync.sh
+            git config --global user.email "openstax@openstax.org"
+            git config --global user.name "Content Synchronizer"
+            git add .
+            git commit -m "sync with archive $SERVER"
+
+  - put: {{book-repo}}
+    params:
+      repository: {{book-repo}}
+      force: true

@@ -21,53 +21,36 @@ then push to respective book repository's main branch.
 
 ## Quick Start
 
-Note: Book repository must contain an `archive-syncfile`or a `META-INF/books.xml`, example can be found on [osbooks-college-algebra-bundle](https://github.com/openstax/osbooks-college-algebra-bundle/) book repo.
+Note: Book repository must contain an `archive-syncfile` or a `META-INF/books.xml`, example can be found on [osbooks-college-algebra-bundle](https://github.com/openstax/osbooks-college-algebra-bundle/) book repo.
 
-Assumes you have the [fly cli](https://concourse-ci.org/fly.html) for Concourse and [fly targets](https://concourse-ci.org/fly.html#fly-login) set up with proper concourse-urls.
+Assumes you have the [fly cli](https://concourse-ci.org/fly.html) for Concourse and [fly targets](https://concourse-ci.org/fly.html#fly-login) set up with proper concourse-urls. See the [concourse tutorial](https://concoursetutorial.com/) for more information related to fly.
 
-### Use the Concourse `fly cli` to set up a pipeline to sync book repository.
-
-```
-fly -t concourse-target set-pipeline \
---config pipeline-sync.yml \
---pipeline sync-pipeline \
---load-vars-from vars.yml \
---var book-repo=osbooks-college-algebra-bundle \
---var archive-server=qa
-```
-
-Command Shorthand:
+### Use `pipemgr` to configure the pipeline to sync book repositories. (For dependencies, see requirements.txt). **Always start by syncing your local osbooks list with what is on concourse**
 
 ```
-fly -t concourse-target sp -c pipeline-sync.yml -p sync-pipeline -l vars.yml -v book-repo=osbooks-college-algebra-bundle -v archive-server=qa
+# Sync your local osbooks list with what is on concourse
+# Note: this assumes that you have your target named v7
+fly -t v7 gp -p sync-osbooks | ./pipemgr extract
+
+# Add one or more books
+# When adding books, the default server is cnx.org
+./pipemgr add-book osbooks-us-history --server qa
+./pipemgr add-book osbooks-college-physics
+
+# List books
+./pipemgr list-books
+
+# Remove osbooks-us-history (server must match as well)
+./pipemgr remove-book osbooks-us-history --server qa
+
+# Generate the pipeline file
+./pipemgr create
+
+# Set the pipeline
+fly -t v7 sp -p sync-osbooks -c out/pipeline.yml
+
+# Use ./pipemgr --help for more information about the command
 ```
-
-**Where..**
-
-- `--config` - pipeline configuration file
-- `--pipeline` - name of pipeline
-- `--load-vars-from` - contains credentials / tokens for pipeline (`vars.yml` template)
-
-`vars.yml` template:
-
-```
-ce-dockerhub-id: <dockerhubusername>
-ce-dockerhub-token: <dockerhubpassword>
-github-token: <githubtoken>
-github-private-key: |
-
------BEGIN OPENSSH PRIVATE KEY-----
-
-........
-
------END OPENSSH PRIVATE KEY-----
-```
-
-**.. and pipeline variables (`--var`):**
-
-- book-repo - name of the Github book repository, content book repos are denoted with "osbooks"
-- archive-server - archive server the content will come from
-- sync-branch - branch of the book repository to sync content to
 
 ---
 
@@ -109,7 +92,7 @@ Step 1 - (CM) Start Process to Unsync:
     - Link to Github Content Repo
     - One Github Content Repo per Github Issue Card
     - Acceptance Criteria:
-      - Destroy sync pipeline on concourse-v6
+      - Remove book repository from sync pipeline
       - Announce in #books-and-candles that updates can be made in POET
       - Update Transition Plan Spreadsheet: Column "POET Editing Start Date"
 

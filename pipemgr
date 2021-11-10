@@ -1,0 +1,54 @@
+#!/usr/bin/env python3
+
+"""Pipe Manager
+
+Usage:
+    pipemgr create
+    pipemgr extract [-f FILE | --file=FILE] [-c | --clean]
+    pipemgr add-book BOOK [--server=SERVER] [-u | --update]
+    pipemgr remove-book BOOK [--server=SERVER] [-u | --update] [-y | --yes]
+    pipemgr list-books
+    pipemgr (-h | --help)
+
+Options:
+    -h  --help
+        Show help
+
+    -c  --clean
+        Delete stored osbooks before extracting resources from the pipeline
+
+    -u  --update
+        Update the osbooks.yml file after adding/removing booka
+
+    -y  --yes
+        Do not prompt before completing the action
+
+    -f FILE  --file=FILE
+        Extract resources from FILE instead of stdin
+
+    --server=SERVER
+        The archive server for the book  [default: cnx.org]
+
+"""
+
+from python_modules import create_pipeline, extract_resources, manage_books
+from python_modules.models.args import Args
+from docopt import docopt
+
+if __name__ == '__main__':
+    docopts = docopt(__doc__)
+    args = Args.from_docopts(docopts)
+    
+    if docopts["create"]:
+        create_pipeline.main(args)
+    elif docopts["extract"]:
+        extract_resources.main(args)
+    elif docopts["add-book"]:
+        manage_books.add_book(args)
+    elif docopts["remove-book"]:
+        manage_books.remove_book(args)
+    elif docopts["list-books"]:
+        manage_books.list_books(args)
+    
+    if docopts["-u"] or docopts["--update"]:
+        create_pipeline.main(args)
