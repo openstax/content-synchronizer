@@ -1,6 +1,6 @@
-from pathlib import Path
 import shutil
 import unittest
+from typing import List, Union
 
 import python_modules
 python_modules.OUTPUT_ROOT = python_modules.OUTPUT_ROOT/"test"
@@ -11,15 +11,15 @@ else:
     python_modules.OUTPUT_ROOT.mkdir()
 
 from python_modules import create_pipeline, manage_books, osbook_utils, extract_resources
-from python_modules.models import Args, args
+from python_modules.models import Args
 from python_modules.utils import read_yml
 
-# TODO: It would be better to include a schema for the pipeline as well
+from pydantic import BaseModel
 
 PIPELINE = python_modules.OUTPUT_ROOT/"pipeline.yml"
 
 # Test the CLI and the underlying functionality at the same time.
-mng_book1 = Args(
+MNG_BOOK1 = Args(
     None,
     None,
     False,
@@ -28,7 +28,7 @@ mng_book1 = Args(
     True
 )
 
-mng_book2 = Args(
+MNG_BOOK2 = Args(
     None,
     None,
     False,
@@ -37,7 +37,7 @@ mng_book2 = Args(
     True
 )
 
-extract_res = Args(
+EXTRACT_RES = Args(
     PIPELINE,
     None,
     False,
@@ -46,8 +46,34 @@ extract_res = Args(
     False
 )
 
-MY_BOOK = osbook_utils.OSBook(mng_book1.book, mng_book1.server)
+MY_BOOK = osbook_utils.OSBook(MNG_BOOK1.book, MNG_BOOK1.server)
 books_added = 0
+
+class Resource(BaseModel):
+    name: str
+    type: str
+    source: dict
+
+class BookResSource(BaseModel):
+    branch: str
+    uri: str
+    private_key: str
+
+class BookResource(Resource):
+    source: BookResSource
+
+class ArchiveResSource(BaseModel):
+    archive_server: str
+    book_repo: str
+    github_token: str
+
+class ArchiveResource(Resource):
+    source: ArchiveResSource
+
+class PipelineValidator(BaseModel):
+    resource_types: List[Resource]
+    resources: List[Union[BookResource, ArchiveResource]]
+    jobs: List[dict]
 
 def _add_book(args):
     global books_added
@@ -62,8 +88,8 @@ def _remove_book(args):
 class TestAddJob(unittest.TestCase):
 
     def test_a_add_book(self):
-        _add_book(mng_book1)
-        _add_book(mng_book2)
+        _add_book(MNG_BOOK1)
+        _add_book(MNG_BOOK2)
         self.assertTrue(osbook_utils.OSBOOKS_FILE.exists())
 
     def test_b_load_book(self):
@@ -72,32 +98,29 @@ class TestAddJob(unittest.TestCase):
         self.assertEqual(books_added, len(osbooks))
 
     def test_c_create_pipeline(self):
-        create_pipeline.main(mng_book1)
+        create_pipeline.main(MNG_BOOK1)
         self.assertTrue(PIPELINE.exists())
 
     def test_d_book_extract(self):
         osbook_utils.OSBOOKS_FILE.rename(osbook_utils.OSBOOKS_FILE.with_suffix(".dis"))
         # Extracting from the same pipeline should be idempotent
         for _ in range(5):
-            extract_resources.main(extract_res)
+            extract_resources.main(EXTRACT_RES)
         osbooks = osbook_utils.read_osbooks()
         self.assertTrue(MY_BOOK in osbooks)
         self.assertEqual(books_added, len(osbooks))
 
     def test_e_book_delete(self):
-        _remove_book(mng_book1)
+        _remove_book(MNG_BOOK1)
         osbooks = osbook_utils.read_osbooks()
         self.assertEqual(books_added, len(osbooks))
         self.assertTrue(MY_BOOK not in osbooks)
-        create_pipeline.main(mng_book1)
+        create_pipeline.main(MNG_BOOK1)
 
     def test_f_pipeline_valid_yaml(self):
         try:
-            read_yml(PIPELINE)
+            PipelineValidator(**read_yml(PIPELINE))
         except FileNotFoundError:
             self.fail("Pipeline was not created")
         except:
             self.fail("Pipeline was not valid yaml")
-
-if __name__ == "__main__":
-    unittest.main().main()
