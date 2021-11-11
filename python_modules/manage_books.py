@@ -8,7 +8,7 @@ def _ask_confirm(book) -> bool:
 def add_book(args: Args):
     osbooks = read_osbooks(args.file)
     osbooks.add(OSBook(args.book, args.server))
-    write_osbooks(osbooks, args.outfile)
+    write_osbooks(osbooks, args.file)
 
 def remove_book(args: Args):
     osbooks = read_osbooks(args.file)
@@ -17,7 +17,7 @@ def remove_book(args: Args):
         raise Exception(f"{book} was not in the osbooks collection")
     if args.yes or _ask_confirm(book):
         osbooks.remove(book)
-        write_osbooks(osbooks, args.outfile)
+        write_osbooks(osbooks, args.file)
 
 def list_books(args):
     for book in read_osbooks(args.file):

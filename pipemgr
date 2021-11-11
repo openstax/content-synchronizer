@@ -5,9 +5,9 @@
 Usage:
     pipemgr create [-f FILE | --file=FILE] [-o OUTFILE | --output=OUTFILE]
     pipemgr extract [-f FILE | --file=FILE] [-o OUTFILE | --output=OUTFILE] [-c | --clean]
-    pipemgr add-book BOOK [--server=SERVER] [-u | --update]
-    pipemgr remove-book BOOK [--server=SERVER] [-u | --update] [-y | --yes]
-    pipemgr list-books
+    pipemgr add-book BOOK [-f FILE | --file=FILE] [--server=SERVER] [-u | --update]
+    pipemgr remove-book BOOK [-f FILE | --file=FILE] [--server=SERVER] [-u | --update] [-y | --yes]
+    pipemgr list-books [-f FILE | --file=FILE]
     pipemgr (-h | --help)
 
 Options:
@@ -35,7 +35,7 @@ Options:
 """
 
 from python_modules import create_pipeline, extract_resources, manage_books
-from python_modules.models.args import Args
+from python_modules.models import Args
 from docopt import docopt
 
 if __name__ == '__main__':
