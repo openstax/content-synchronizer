@@ -1,4 +1,5 @@
-from typing import Set
+from pathlib import Path
+from typing import Optional, Set
 
 from .utils import read_yml, write_yml
 from . import OUTPUT_ROOT
@@ -39,13 +40,17 @@ class OSBook:
             "archive-server": self.archive_server
         }
 
-def read_osbooks() -> Set[OSBook]:
-    if not OSBOOKS_FILE.exists():
+def read_osbooks(osbooks_path: Optional[Path] = None) -> Set[OSBook]:
+    if osbooks_path is None:
+        osbooks_path = OSBOOKS_FILE
+    if not osbooks_path.exists():
         return set()
     return set(
         OSBook.from_osbook_collection(book)
-        for book in read_yml(OSBOOKS_FILE)
+        for book in read_yml(osbooks_path)
     )
 
-def write_osbooks(osbooks: Set[OSBook]):
-    write_yml([osbook.dict() for osbook in osbooks], OSBOOKS_FILE)
+def write_osbooks(osbooks: Set[OSBook], osbooks_path: Optional[Path] = None):
+    if osbooks_path is None:
+        osbooks_path = OSBOOKS_FILE
+    write_yml([osbook.dict() for osbook in osbooks], osbooks_path)

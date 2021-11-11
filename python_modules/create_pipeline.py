@@ -1,3 +1,4 @@
+from pathlib import Path
 import re
 
 import yaml
@@ -16,8 +17,8 @@ def prepare_template(template: str, args: dict) -> str:
     # Use what is inside {{}} as keys to the args dict
     return re.sub("({{)(.+?)(}})", lambda match: args[match.group(2)], template)
 
-def main(_: Args):
-    osbooks = read_yml(OSBOOKS_FILE)
+def create_pipeline(input_path: Path, output_path: Path):
+    osbooks = read_yml(input_path)
     if len(osbooks) == 0:
         raise Exception("Cannot create pipeline without books")
     pipeline_temp = read_yml(TEMPLATE_ROOT/"pipeline.yml")
@@ -33,4 +34,10 @@ def main(_: Args):
         jobs.append(load_yaml(job))
         resources.append(load_yaml(arch_book))
         resources.append(load_yaml(book_repo))
-    write_yml(pipeline_temp, OUTPUT_ROOT/"pipeline.yml")
+    write_yml(pipeline_temp, output_path)
+
+def main(args: Args):
+    create_pipeline(
+        args.file or OSBOOKS_FILE,
+        args.outfile or (OUTPUT_ROOT/"pipeline.yml")
+    )

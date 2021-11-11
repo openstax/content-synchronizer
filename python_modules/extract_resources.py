@@ -6,19 +6,15 @@ from .osbook_utils import read_osbooks, write_osbooks, OSBook
 from .utils import read_yml
 from .models import Args
 
-def _load_stdin_yml():
-    return yaml.load(sys.stdin, Loader=yaml.SafeLoader)
-
 def main(args: Args):
     if not args.clean:
-        osbooks = read_osbooks()
+        osbooks = read_osbooks(args.outfile)
     else:
         osbooks = set()
     if args.file is None:
-        pipeline = _load_stdin_yml()
+        pipeline = yaml.load(sys.stdin, Loader=yaml.SafeLoader)
     else:
-        from pathlib import Path
-        pipeline = read_yml(Path(args.file).resolve())
+        pipeline = read_yml(args.file)
     if "resources" not in pipeline:
         logging.warn("No resources found")
         return
@@ -31,4 +27,4 @@ def main(args: Args):
     if len(osbooks) == 0:
         logging.warn("No books found")
         return
-    write_osbooks(osbooks)
+    write_osbooks(osbooks, args.outfile)

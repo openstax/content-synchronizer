@@ -3,8 +3,8 @@
 """Pipe Manager
 
 Usage:
-    pipemgr create
-    pipemgr extract [-f FILE | --file=FILE] [-c | --clean]
+    pipemgr create [-f FILE | --file=FILE] [-o OUTFILE | --output=OUTFILE]
+    pipemgr extract [-f FILE | --file=FILE] [-o OUTFILE | --output=OUTFILE] [-c | --clean]
     pipemgr add-book BOOK [--server=SERVER] [-u | --update]
     pipemgr remove-book BOOK [--server=SERVER] [-u | --update] [-y | --yes]
     pipemgr list-books
@@ -24,7 +24,10 @@ Options:
         Do not prompt before completing the action
 
     -f FILE  --file=FILE
-        Extract resources from FILE instead of stdin
+        Use FILE as input for the operation
+
+    -o OUTFILE  --output=OUTFILE
+        Output results to OUTFILE
 
     --server=SERVER
         The archive server for the book  [default: cnx.org]
