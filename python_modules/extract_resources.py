@@ -1,20 +1,26 @@
+from pathlib import Path
 import sys
 import logging
+from typing import Optional
 
 import yaml
 from .osbook_utils import read_osbooks, write_osbooks, OSBook
 from .utils import read_yml
 from .models import Args
 
-def main(args: Args):
-    if not args.clean:
-        osbooks = read_osbooks(args.outfile)
+def extract(
+    clean: bool,
+    input_file: Optional[Path] = None, 
+    output_file: Optional[Path] = None,
+):
+    if not clean:
+        osbooks = read_osbooks(output_file)
     else:
         osbooks = set()
-    if args.file is None:
+    if input_file is None:
         pipeline = yaml.load(sys.stdin, Loader=yaml.SafeLoader)
     else:
-        pipeline = read_yml(args.file)
+        pipeline = read_yml(input_file)
     if "resources" not in pipeline:
         logging.warn("No resources found")
         return
@@ -27,4 +33,7 @@ def main(args: Args):
     if len(osbooks) == 0:
         logging.warn("No books found")
         return
-    write_osbooks(osbooks, args.outfile)
+    write_osbooks(osbooks, output_file)
+
+def main(args: Args):
+    extract(args.clean, args.file, args.outfile)

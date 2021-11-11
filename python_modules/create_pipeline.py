@@ -17,8 +17,8 @@ def prepare_template(template: str, args: dict) -> str:
     # Use what is inside {{}} as keys to the args dict
     return re.sub("({{)(.+?)(}})", lambda match: args[match.group(2)], template)
 
-def create_pipeline(input_path: Path, output_path: Path):
-    osbooks = read_yml(input_path)
+def create_pipeline(osbooks_path: Path, output_path: Path):
+    osbooks = read_yml(osbooks_path)
     if len(osbooks) == 0:
         raise Exception("Cannot create pipeline without books")
     pipeline_temp = read_yml(TEMPLATE_ROOT/"pipeline.yml")

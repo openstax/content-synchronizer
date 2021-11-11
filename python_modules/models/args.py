@@ -9,7 +9,7 @@ class Args(NamedTuple):
     file: Optional[Path]
     outfile: Optional[Path]
     clean: bool
-    book: str
+    book: Optional[str]
     server: str
     yes: bool = False
 
