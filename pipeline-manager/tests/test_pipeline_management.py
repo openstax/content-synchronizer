@@ -1,6 +1,13 @@
 import shutil
 import unittest
 from typing import List, Union
+from pathlib import Path
+import sys
+
+# Setup the correct module import path
+sys.path.append(
+    str(Path(__file__).resolve().parent.parent)
+)
 
 import python_modules
 python_modules.OUTPUT_ROOT = python_modules.OUTPUT_ROOT/"test"

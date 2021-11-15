@@ -23,11 +23,19 @@ then push to respective book repository's main branch.
 
 Note: Book repository must contain an `archive-syncfile` or a `META-INF/books.xml`, example can be found on [osbooks-college-algebra-bundle](https://github.com/openstax/osbooks-college-algebra-bundle/) book repo.
 
-Assumes you have the [fly cli](https://concourse-ci.org/fly.html) for Concourse and [fly targets](https://concourse-ci.org/fly.html#fly-login) set up with proper concourse-urls. See the [concourse tutorial](https://concoursetutorial.com/) for more information related to fly.
+This document assumes you have the [fly cli](https://concourse-ci.org/fly.html) for Concourse and [fly targets](https://concourse-ci.org/fly.html#fly-login) set up with proper concourse-urls. See the [concourse tutorial](https://concoursetutorial.com/) for more information related to fly.
 
-### Use `pipemgr` to configure the pipeline to sync book repositories. (For dependencies, see requirements.txt). **Always start by syncing your local osbooks list with what is on concourse**
+### Use `pipemgr` to configure the pipeline to sync book repositories. For dependencies, you can use [Poetry](https://python-poetry.org/docs/) or the included requirements.txt (this document assumes you are using poetry). **Always start by syncing your local osbooks list with what is on concourse!**
 
-```
+```bash
+# Enter the tool's parent directory
+cd pipeline-manager
+
+# Perform first-time setup if you need to with `poetry install`
+
+# Enter your virtualenv
+poetry shell
+
 # Sync your local osbooks list with what is on concourse
 # Note: this assumes that you have your target named v7
 fly -t v7 gp -p sync-osbooks | ./pipemgr extract
