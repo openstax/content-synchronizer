@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "pipeline-manager"
+name = "pipemgr"
 version = "0.1.0"
 description = "Helps manage the book syncing pipeline"
 authors = ["Tyler Nullmeier <tylerzeromaster@gmail.com>"]

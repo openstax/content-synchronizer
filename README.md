@@ -29,7 +29,7 @@ This document assumes you have the [fly cli](https://concourse-ci.org/fly.html) 
 
 ```bash
 # Enter the tool's parent directory
-cd pipeline-manager
+cd pipemgr
 
 # Perform first-time setup if you need to with `poetry install`
 

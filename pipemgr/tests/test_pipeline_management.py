@@ -9,21 +9,21 @@ sys.path.append(
     str(Path(__file__).resolve().parent.parent)
 )
 
-import python_modules
-python_modules.OUTPUT_ROOT = python_modules.OUTPUT_ROOT/"test"
-if not python_modules.OUTPUT_ROOT.exists():
-    python_modules.OUTPUT_ROOT.mkdir()
+import src
+src.OUTPUT_ROOT = src.OUTPUT_ROOT/"test"
+if not src.OUTPUT_ROOT.exists():
+    src.OUTPUT_ROOT.mkdir()
 else:
-    shutil.rmtree(python_modules.OUTPUT_ROOT)
-    python_modules.OUTPUT_ROOT.mkdir()
+    shutil.rmtree(src.OUTPUT_ROOT)
+    src.OUTPUT_ROOT.mkdir()
 
-from python_modules import create_pipeline, manage_books, osbook_utils, extract_resources
-from python_modules.models import Args
-from python_modules.utils import read_yml
+from src import create_pipeline, manage_books, osbook_utils, extract_resources
+from src.models import Args
+from src.utils import read_yml
 
 from pydantic import BaseModel
 
-PIPELINE = python_modules.OUTPUT_ROOT/"pipeline.yml"
+PIPELINE = src.OUTPUT_ROOT/"pipeline.yml"
 
 # Test the CLI and the underlying functionality at the same time.
 MNG_BOOK1 = Args(

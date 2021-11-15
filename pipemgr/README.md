@@ -7,7 +7,7 @@ Use either `poetry install` or `pip instal -r requirements.txt`. This document a
 
 ```bash
 # Enter the tool's parent directory
-cd pipeline-manager
+cd pipemgr
 
 # Perform first-time setup if you need to with `poetry install`
 

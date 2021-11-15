@@ -28,9 +28,9 @@ jobs:
           cp resource-synchronizer/poet.json poet.json
           pytest resource-synchronizer/test_sync_scripts.py
           pytest resource-trigger/test_sync_trigger.py
-      - name: Test pipeline-manager
+      - name: Test pipemgr
         run: |
-          cd pipeline-manager
+          cd pipemgr
           pip install -U poetry
           poetry install
           poetry run pytest
