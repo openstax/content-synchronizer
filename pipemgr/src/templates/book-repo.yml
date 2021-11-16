@@ -1,0 +1,6 @@
+name: {{book-repo}}
+type: git
+source:
+  branch: main
+  uri: git@github.com:openstax/{{book-repo}}.git
+  private_key: ((github-private-key))

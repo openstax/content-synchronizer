@@ -1,0 +1,6 @@
+name: {{book-repo}}-version-checker
+type: version-checker
+source:
+  archive_server: {{archive-server}}
+  book_repo: {{book-repo}}
+  github_token: ((github-api-token))

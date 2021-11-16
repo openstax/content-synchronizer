@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-18.04
     strategy:
       matrix:
-        python-version: ['3.6']
+        python-version: ['3.8']
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
@@ -21,10 +21,17 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Display Python version
         run: python -c "import sys; print(sys.version)"
-      - name: Test
+      - name: Test resource-synchronizer
         run: |
           pip install -r resource-synchronizer/requirements.txt
           pip install pytest pytest-mock requests-mock
           cp resource-synchronizer/poet.json poet.json
           pytest resource-synchronizer/test_sync_scripts.py
           pytest resource-trigger/test_sync_trigger.py
+      - name: Test pipemgr
+        run: |
+          cd pipemgr
+          pip install -U poetry
+          poetry install
+          poetry run pytest
+          cd -

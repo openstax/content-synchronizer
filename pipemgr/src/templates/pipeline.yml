@@ -1,0 +1,11 @@
+---
+resource_types:
+  - name: version-checker
+    type: registry-image
+    source:
+      username: ((ce-dockerhub-id))
+      password: ((ce-dockerhub-token))
+      repository: openstax/sync-resource
+      tag: 20211027.213953
+resources: []
+jobs: []
