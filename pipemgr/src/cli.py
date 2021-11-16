@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 """Pipe Manager
 
 Usage:
@@ -34,14 +32,16 @@ Options:
 
 """
 
-from src import create_pipeline, extract_resources, manage_books
-from src.models import Args
 from docopt import docopt
 
-if __name__ == '__main__':
+from . import create_pipeline, extract_resources, manage_books
+from .models import Args
+
+
+def cli():
     docopts = docopt(__doc__)
     args = Args.from_docopts(docopts)
-    
+
     if docopts["create"]:
         create_pipeline.main(args)
     elif docopts["extract"]:
@@ -52,6 +52,10 @@ if __name__ == '__main__':
         manage_books.remove_book(args)
     elif docopts["list-books"]:
         manage_books.list_books(args)
-    
+
     if docopts["-u"] or docopts["--update"]:
         create_pipeline.main(args)
+
+
+if __name__ == '__main__':
+    cli()
