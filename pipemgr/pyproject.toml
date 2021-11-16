@@ -2,7 +2,11 @@
 name = "pipemgr"
 version = "0.1.0"
 description = "Helps manage the book syncing pipeline"
-authors = ["Tyler Nullmeier <tylerzeromaster@gmail.com>"]
+authors = ["Tyler Nullmeier <tylerzeromaster@gmail.com>", "m1yag1 <mike.arbelaez@rice.edu>"]
+packages = [
+    { include = "src" },
+    { include = "src/**/*.py" },
+]
 
 [tool.poetry.dependencies]
 python = ">=3.8"
@@ -12,6 +16,9 @@ docopts = "^0.6.1"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.5"
+
+[tool.poetry.scripts]
+pipemgr = "src.cli:cli"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
