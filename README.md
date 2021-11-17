@@ -27,6 +27,10 @@ This document assumes you have the [fly cli](https://concourse-ci.org/fly.html) 
 
 ### Use `pipemgr` to configure the pipeline to sync book repositories. For dependencies, you can use [Poetry](https://python-poetry.org/docs/) or the included requirements.txt (this document assumes you are using poetry). **Always start by syncing your local osbooks list with what is on concourse!**
 
+- Notes about extracting:
+  - Extracting resources will only add books to your local list that were not present already
+  - If you want to start from an empty book list, you can use the clean option
+
 ```bash
 # Enter the tool's parent directory
 cd pipemgr
@@ -38,26 +42,26 @@ poetry shell
 
 # Sync your local osbooks list with what is on concourse
 # Note: this assumes that you have your target named v7
-fly -t v7 gp -p sync-osbooks | ./pipemgr extract
+fly -t v7 gp -p sync-osbooks | poetry run pipemgr extract
 
 # Add one or more books
 # When adding books, the default server is cnx.org
-./pipemgr add-book osbooks-us-history --server qa
-./pipemgr add-book osbooks-college-physics
+poetry run pipemgr add-book osbooks-us-history --server qa
+poetry run pipemgr add-book osbooks-college-physics
 
 # List books
-./pipemgr list-books
+poetry run pipemgr list-books
 
 # Remove osbooks-us-history (server must match as well)
-./pipemgr remove-book osbooks-us-history --server qa
+poetry run pipemgr remove-book osbooks-us-history --server qa
 
 # Generate the pipeline file
-./pipemgr create
+poetry run pipemgr create
 
 # Set the pipeline
-fly -t v7 sp -p sync-osbooks -c out/pipeline.yml
+fly -t v7 sp -p sync-osbooks -c sync-osbooks.yml
 
-# Use ./pipemgr --help for more information about the command
+# Use poetry run pipemgr --help for more information about the command
 ```
 
 ---

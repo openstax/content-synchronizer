@@ -5,17 +5,20 @@ from pathlib import Path
 import sys
 
 # Setup the correct module import path
+WORKING_ROOT = Path(__file__).resolve().parent
+MODULE_ROOT = WORKING_ROOT.parent
 sys.path.append(
-    str(Path(__file__).resolve().parent.parent)
+    str(MODULE_ROOT)
 )
 
 import src
-src.OUTPUT_ROOT = src.OUTPUT_ROOT/"test"
+src.OUTPUT_ROOT = WORKING_ROOT/"out"/"test"
 if not src.OUTPUT_ROOT.exists():
-    src.OUTPUT_ROOT.mkdir()
+    src.OUTPUT_ROOT.mkdir(parents=True)
 else:
+    # Start each test fresh
     shutil.rmtree(src.OUTPUT_ROOT)
-    src.OUTPUT_ROOT.mkdir()
+    src.OUTPUT_ROOT.mkdir(parents=True)
 
 from src import create_pipeline, manage_books, osbook_utils, extract_resources
 from src.models import Args
@@ -28,7 +31,7 @@ PIPELINE = src.OUTPUT_ROOT/"pipeline.yml"
 # Test the CLI and the underlying functionality at the same time.
 MNG_BOOK1 = Args(
     None,
-    None,
+    PIPELINE,
     False,
     "TEST",
     "example.com",
@@ -56,41 +59,50 @@ EXTRACT_RES = Args(
 MY_BOOK = osbook_utils.OSBook(MNG_BOOK1.book, MNG_BOOK1.server)
 books_added = 0
 
+
 class Resource(BaseModel):
     name: str
     type: str
     source: dict
+
 
 class BookResSource(BaseModel):
     branch: str
     uri: str
     private_key: str
 
+
 class BookResource(Resource):
     source: BookResSource
+
 
 class ArchiveResSource(BaseModel):
     archive_server: str
     book_repo: str
     github_token: str
 
+
 class ArchiveResource(Resource):
     source: ArchiveResSource
+
 
 class PipelineValidator(BaseModel):
     resource_types: List[Resource]
     resources: List[Union[BookResource, ArchiveResource]]
     jobs: List[dict]
 
+
 def _add_book(args):
     global books_added
     books_added += 1
     manage_books.add_book(args)
 
+
 def _remove_book(args):
     global books_added
     books_added -= 1
     manage_books.remove_book(args)
+
 
 class TestAddJob(unittest.TestCase):
 
@@ -109,7 +121,8 @@ class TestAddJob(unittest.TestCase):
         self.assertTrue(PIPELINE.exists())
 
     def test_d_book_extract(self):
-        osbook_utils.OSBOOKS_FILE.rename(osbook_utils.OSBOOKS_FILE.with_suffix(".dis"))
+        osbook_utils.OSBOOKS_FILE.rename(
+            osbook_utils.OSBOOKS_FILE.with_suffix(".dis"))
         # Extracting from the same pipeline should be idempotent
         for _ in range(5):
             extract_resources.main(EXTRACT_RES)

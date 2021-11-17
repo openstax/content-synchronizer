@@ -34,8 +34,8 @@ Options:
 
 from docopt import docopt
 
-from . import create_pipeline, extract_resources, manage_books
-from .models import Args
+from src import create_pipeline, extract_resources, manage_books
+from src.models import Args
 
 
 def cli():

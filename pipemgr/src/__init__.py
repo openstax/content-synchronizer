@@ -3,7 +3,7 @@ from pathlib import Path
 import yaml
 
 MODULE_ROOT = Path(__file__).resolve().parent
-WORKING_ROOT = MODULE_ROOT.parent
+WORKING_ROOT = Path.home()/".pipemgr"
 OUTPUT_ROOT = WORKING_ROOT/"out"
 TEMPLATE_ROOT = MODULE_ROOT/"templates"
 
@@ -13,4 +13,4 @@ def load_yaml(yaml_str: str):
 
 
 if not OUTPUT_ROOT.exists():
-    OUTPUT_ROOT.mkdir()
+    OUTPUT_ROOT.mkdir(parents=True)
