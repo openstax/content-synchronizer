@@ -6,6 +6,7 @@ from . import OUTPUT_ROOT
 
 OSBOOKS_FILE = OUTPUT_ROOT/"osbooks.yml"
 
+
 class OSBook:
     def __init__(self, book_repo: str, archive_server: str):
         self.book_repo = book_repo
@@ -13,8 +14,8 @@ class OSBook:
 
     def __eq__(self, o: object) -> bool:
         return (isinstance(o, OSBook)
-            and o.book_repo == self.book_repo
-            and o.archive_server == self.archive_server)
+                and o.book_repo == self.book_repo
+                and o.archive_server == self.archive_server)
 
     def __hash__(self) -> int:
         return hash((self.book_repo, self.archive_server))
@@ -40,6 +41,7 @@ class OSBook:
             "archive-server": self.archive_server
         }
 
+
 def read_osbooks(osbooks_path: Optional[Path] = None) -> Set[OSBook]:
     if osbooks_path is None:
         osbooks_path = OSBOOKS_FILE
@@ -49,6 +51,7 @@ def read_osbooks(osbooks_path: Optional[Path] = None) -> Set[OSBook]:
         OSBook.from_osbook_collection(book)
         for book in read_yml(osbooks_path)
     )
+
 
 def write_osbooks(osbooks: Set[OSBook], osbooks_path: Optional[Path] = None):
     if osbooks_path is None:

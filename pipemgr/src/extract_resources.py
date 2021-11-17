@@ -8,9 +8,10 @@ from .osbook_utils import read_osbooks, write_osbooks, OSBook
 from .utils import read_yml
 from .models import Args
 
+
 def extract(
     clean: bool,
-    input_file: Optional[Path] = None, 
+    input_file: Optional[Path] = None,
     output_file: Optional[Path] = None,
 ):
     if not clean:
@@ -34,6 +35,7 @@ def extract(
         logging.warn("No books found")
         return
     write_osbooks(osbooks, output_file)
+
 
 def main(args: Args):
     extract(args.clean, args.file, args.outfile)

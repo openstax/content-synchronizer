@@ -7,15 +7,21 @@ from .utils import read_yml, write_yml
 from .osbook_utils import OSBOOKS_FILE
 from .models import Args
 
+PIPELINE_FILE = Path(".").resolve()/"sync-osbooks.yml"
+
+
 def load_yaml(yaml_str: str):
     return yaml.load(yaml_str, Loader=yaml.SafeLoader)
+
 
 def read_template(temp_path: str) -> str:
     return (TEMPLATE_ROOT/temp_path).read_text()
 
+
 def prepare_template(template: str, args: dict) -> str:
     # Use what is inside {{}} as keys to the args dict
     return re.sub("({{)(.+?)(}})", lambda match: args[match.group(2)], template)
+
 
 def create_pipeline(osbooks_path: Path, output_path: Path):
     osbooks = read_yml(osbooks_path)
@@ -36,8 +42,9 @@ def create_pipeline(osbooks_path: Path, output_path: Path):
         resources.append(load_yaml(book_repo))
     write_yml(pipeline_temp, output_path)
 
+
 def main(args: Args):
     create_pipeline(
         args.file or OSBOOKS_FILE,
-        args.outfile or (OUTPUT_ROOT/"pipeline.yml")
+        args.outfile or PIPELINE_FILE
     )

@@ -2,5 +2,7 @@ resource_trigger/__pycache__/
 __pycache__/
 .pytest_cache/
 *.pyc
-**/out/**
+**out
 **.DS_Store
+**dist
+sync-osbooks.yml
