@@ -1,0 +1,4 @@
+targets:
+  v7:
+    api: https://concourse-v7.openstax.org
+    team: CE
