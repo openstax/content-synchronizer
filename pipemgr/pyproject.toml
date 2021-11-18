@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pipemgr"
-version = "0.1.1"
+version = "0.1.2"
 description = "Helps manage the book syncing pipeline"
 authors = ["Tyler Nullmeier <tylerzeromaster@gmail.com>", "m1yag1 <mike.arbelaez@rice.edu>"]
 packages = [
