@@ -6,23 +6,22 @@ COPY . .
 RUN poetry build -f wheel
 
 # Get fly cli
-RUN apt-get update && \
-    apt-get install curl && \
-    mkdir bin && \
-    curl 'https://concourse-v7.openstax.org/api/v1/cli?arch=amd64&platform=linux' -o bin/fly && \
-    chmod +x bin/fly
+RUN mkdir bin && \
+    curl -L https://github.com/concourse/concourse/releases/download/v7.3.2/fly-7.3.2-linux-amd64.tgz -o fly.tgz && \
+    tar -xvzf fly.tgz && rm fly.tgz && \
+    chmod +x fly && \
+    mv fly bin
 
 # ------
 
 # Create the environment to run in
 FROM python:3.8-alpine
-LABEL maintainer="OpenStax Content Engineering"
 ENV ENV="/root/.ashrc" \
     PATH="/app/bin:${PATH}"
 WORKDIR /app
 COPY --from=builder /app .
 RUN cd env && mv $(ls -A) ~ && cd - && \
     rmdir env && \
-    pip install dist/pipemgr-*.whl && \
+    pip install --no-cache-dir dist/pipemgr-*.whl && \
     rm -rf dist
 CMD ["/bin/sh"]
