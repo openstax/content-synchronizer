@@ -74,7 +74,9 @@ Additional_UUIDS = {
     "col11995": "5bcc0e59-7345-421d-8507-a1e4608685e8",
     "col12006": "405335a3-7cff-4df2-a9ad-29062a4af261",
     "col12012": "4539ae23-1ccc-421e-9b25-843acbb6c4b0",
-    "col32026": "507feb1e-cfff-4b54-bc07-d52636cecfe3"
+    "col32026": "507feb1e-cfff-4b54-bc07-d52636cecfe3",
+    "col32642": "1b4ee0ce-ee89-44fa-a5e7-a0db9f0c94b1",
+    "col32565": "728df0bb-e07f-489d-91e3-4734a5932f92"
 }
 
 polish_physics_UUIDS = {
