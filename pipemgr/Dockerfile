@@ -15,13 +15,12 @@ RUN mkdir bin && \
 # ------
 
 # Create the environment to run in
-FROM python:3.8-alpine
-ENV ENV="/root/.ashrc" \
-    PATH="/app/bin:${PATH}"
+FROM openstax/python3-base:20211117.170559
+ENV PATH="/app/bin:${PATH}"
 WORKDIR /app
 COPY --from=builder /app .
 RUN cd env && mv $(ls -A) ~ && cd - && \
     rmdir env && \
     pip install --no-cache-dir dist/pipemgr-*.whl && \
     rm -rf dist
-CMD ["/bin/sh"]
+CMD ["/bin/bash"]
