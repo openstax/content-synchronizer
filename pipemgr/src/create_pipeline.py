@@ -2,12 +2,20 @@ from pathlib import Path
 import re
 
 import yaml
-from . import OUTPUT_ROOT, TEMPLATE_ROOT
+from . import TEMPLATE_ROOT
 from .utils import read_yml, write_yml
 from .osbook_utils import OSBOOKS_FILE
 from .models import Args
 
 PIPELINE_FILE = Path(".").resolve()/"sync-osbooks.yml"
+
+
+class OSBooksError(Exception):
+    def __init__(self):
+        self.message = "Cannot create pipeline without books"
+
+    def __str__(self) -> str:
+        return self.message
 
 
 def load_yaml(yaml_str: str):
@@ -24,9 +32,11 @@ def prepare_template(template: str, args: dict) -> str:
 
 
 def create_pipeline(osbooks_path: Path, output_path: Path):
+    if not osbooks_path.exists():
+        raise OSBooksError
     osbooks = read_yml(osbooks_path)
     if len(osbooks) == 0:
-        raise Exception("Cannot create pipeline without books")
+        raise OSBooksError
     pipeline_temp = read_yml(TEMPLATE_ROOT/"pipeline.yml")
     job_temp = read_template("job.yml")
     arch_book_temp = read_template("archive-book.yml")

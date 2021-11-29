@@ -90,7 +90,7 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 name = "pydantic"
 version = "1.8.2"
 description = "Data validation and settings management using python 3.6 type hinting"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.6.1"
 
@@ -150,14 +150,14 @@ python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
 name = "typing-extensions"
 version = "4.0.0"
 description = "Backported and Experimental Type Hints for Python 3.6+"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.6"
 
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8"
-content-hash = "9b42d53d923947b72d653eb81fdf6f8db611e78b0f53044ed4ec8cbcee246726"
+content-hash = "cb0780d516c64365cbc0fb027c79649486e38c7bc16d2ec9559466353cf1e7d8"
 
 [metadata.files]
 atomicwrites = [
