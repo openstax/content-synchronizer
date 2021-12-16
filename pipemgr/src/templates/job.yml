@@ -14,7 +14,7 @@ plan:
           username: ((ce-dockerhub-id))
           password: ((ce-dockerhub-token))
           repository: openstax/content-synchronizer
-          tag: 20211027.213953
+          semver_constraint: ">= 20211213.17322"
       inputs:
         - name: {{book-repo}}
       outputs:
