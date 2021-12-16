@@ -6,6 +6,6 @@ resource_types:
       username: ((ce-dockerhub-id))
       password: ((ce-dockerhub-token))
       repository: openstax/sync-resource
-      tag: 20211027.213953
+      semver_constraint: ">= 20211213.17322"
 resources: []
 jobs: []
