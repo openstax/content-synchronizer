@@ -32,7 +32,7 @@ def prepare_template(template: str, args: dict) -> str:
         "({{)(.+?)(}})", lambda match: args[match.group(2)], template)
 
 
-def create_pipeline(osbooks_path: Path, output_path: Path):
+def create_pipeline(osbooks_path: Path):
     if not osbooks_path.exists():
         raise OSBooksError
     osbooks = read_yml(osbooks_path)
@@ -51,11 +51,16 @@ def create_pipeline(osbooks_path: Path, output_path: Path):
         jobs.append(load_yaml(job))
         resources.append(load_yaml(arch_book))
         resources.append(load_yaml(book_repo))
-    write_yml(pipeline_temp, output_path)
+    return pipeline_temp
 
 
 def main(args: Args):
-    create_pipeline(
+    outfile = args.outfile
+    pipeline = create_pipeline(
         args.file or OSBOOKS_FILE,
-        args.outfile or PIPELINE_FILE
     )
+    if outfile is not None:
+        write_yml(pipeline, outfile)
+    else:
+        from .remote import set_pipeline
+        set_pipeline("sync-osbooks", pipeline)

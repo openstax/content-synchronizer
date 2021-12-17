@@ -4,6 +4,11 @@ from typing import Any
 import yaml
 
 
+def ask_confirm(book) -> bool:
+    response = input(f"Are you sure you want to delete {book}? ").lower()
+    return response in ("y", "yes")
+
+
 def read_yml(file_path: Path):
     with open(file_path, "r") as yaml_in:
         return yaml.load(yaml_in, Loader=yaml.SafeLoader)

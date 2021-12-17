@@ -1,9 +1,10 @@
 from pathlib import Path
-import sys
+# import sys
 import logging
 from typing import Optional
 
-import yaml
+# import yaml
+# import requests
 from .osbook_utils import read_osbooks, write_osbooks
 from .models import OSBook
 from .utils import read_yml
@@ -20,7 +21,8 @@ def extract(
     else:
         osbooks = set()
     if input_file is None:
-        pipeline = yaml.load(sys.stdin, Loader=yaml.SafeLoader)
+        from .remote import get_pipeline
+        pipeline = get_pipeline("sync-osbooks")["config"]
     else:
         pipeline = read_yml(input_file)
     if "resources" not in pipeline:
