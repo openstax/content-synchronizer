@@ -16,7 +16,8 @@ def remove_book(args: Args):
     book = OSBook(args.book, args.server)
     if book not in osbooks:
         logging.warning(f"{book} was not in the osbooks collection")
-    if args.yes or ask_confirm(book):
+        return
+    if args.yes or ask_confirm(f"Are you sure you want to delete '{book}'?"):
         osbooks.remove(book)
         write_osbooks(osbooks, args.file)
 

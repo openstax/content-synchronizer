@@ -8,14 +8,14 @@ Use `poetry install --no-dev` to install dependencies. Alternatively, use the do
 > - Extracting resources will only add books to your local list that were not in it already
 > - If you want to start from an empty book list, you can use the `clean` option
 > - Unless you use the `clean` option, extracting will **never** remove books from your local list
+> - Make sure to configure your .env file to include your CONCOURSE_USERNAME and CONCOURSE_PASSWORD
 
 ```bash
 # Enter the tool's parent directory
 cd pipemgr
 
 # Sync your local osbooks list with what is on concourse
-# Note: this assumes that you have your target named v7
-fly -t v7 gp -p sync-osbooks | poetry run pipemgr extract --clean
+poetry run pipemgr extract --clean
 
 # The clean option above ensures that any books that are not 
 # in the pipeline will be removed from your local list
@@ -31,11 +31,8 @@ poetry run pipemgr add-book osbooks-college-physics
 # Remove osbooks-us-history (server must match as well, default is cnx.org)
 poetry run pipemgr remove-book osbooks-us-history --server qa
 
-# Generate the pipeline file (outputs to ./sync-osbooks.yml by default)
-poetry run pipemgr create
-
 # Set the pipeline
-fly -t v7 sp -p sync-osbooks -c sync-osbooks.yml
+poetry run pipemgr create
 
 # Use poetry run pipemgr --help for more information about the command
 ```
@@ -45,9 +42,8 @@ All of the same commands apply; however, `pipemgr` is an installed package on th
 
 ### Here are helpful aliases that exist in the container
 ```bash
-alias fly-login='fly -t v7 login'
-alias extract='fly -t v7 gp -p sync-osbooks | pipemgr extract'
-alias publish='fly -t v7 sp -p sync-osbooks -c sync-osbooks.yml'
+alias extract='pipemgr extract'
+alias publish='pipemgr create'
 ```
 
 # Running tests

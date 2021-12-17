@@ -1,22 +1,25 @@
+import logging
 import os
 import re
 from contextlib import contextmanager
 from typing import Generator
+from getpass import getpass
 
 from dotenv import load_dotenv
 from requests.sessions import Session
 
-load_dotenv()
+load_dotenv('./.env')
 
 concourse_url = "https://concourse-v7.openstax.org"
 concourse_login = f"{concourse_url}/sky/login"
 pipeline_url = f"{concourse_url}/api/v1/teams/CE/pipelines"
+pipeline_config_url = f"{pipeline_url}/{{pipeline}}/config"
 
 
 @contextmanager
 def _login() -> Generator[Session, None, None]:
-    username = os.environ["CONCOURSE_USERNAME"]
-    password = os.environ["CONCOURSE_PASSWORD"]
+    username = os.environ.get("CONCOURSE_USERNAME", input("Username: "))
+    password = os.environ.get("CONCOURSE_PASSWORD", getpass())
 
     ldap_url_regex = re.compile(r"\/sky\/issuer\/auth\/ldap\?req=[a-z0-9]+")
     bearer_regex = re.compile('authToken: "bearer (.+)"')
@@ -38,15 +41,18 @@ def _login() -> Generator[Session, None, None]:
         yield session
 
 
-def get_pipeline(pipeline: str):
-    pipeline_config_url = f"{pipeline_url}/{pipeline}/config"
+def get_pipeline(pipeline: str) -> dict:
+    pipeline_cfg = {}
+    try:
+        with _login() as session:
+            pipeline_cfg = session.get(
+                pipeline_config_url.format(pipeline=pipeline)).json()["config"]
+    except Exception as e:
+        logging.error(e)
 
-    with _login() as session:
-        return session.get(pipeline_config_url).json()
+    return pipeline_cfg
 
 
 def set_pipeline(pipeline: str, config: dict):
-    pipeline_config_url = f"{pipeline_url}/{pipeline}/config"
-
     with _login() as session:
-        session.put(pipeline_config_url, data=config)
+        session.put(pipeline_config_url.format(pipeline=pipeline), data=config)

@@ -1,7 +1,7 @@
 from pathlib import Path
 # import sys
 import logging
-from typing import Optional
+from typing import Optional, Set
 
 # import yaml
 # import requests
@@ -11,20 +11,7 @@ from .utils import read_yml
 from .models import Args
 
 
-def extract(
-    clean: bool,
-    input_file: Optional[Path] = None,
-    output_file: Optional[Path] = None,
-):
-    if not clean:
-        osbooks = read_osbooks(output_file)
-    else:
-        osbooks = set()
-    if input_file is None:
-        from .remote import get_pipeline
-        pipeline = get_pipeline("sync-osbooks")["config"]
-    else:
-        pipeline = read_yml(input_file)
+def extract_resources(osbooks: Optional[Set[OSBook]], pipeline: dict):
     if "resources" not in pipeline:
         logging.warn("No resources found")
         return
@@ -37,8 +24,25 @@ def extract(
     if len(osbooks) == 0:
         logging.warn("No books found")
         return
+
+
+def extract_and_save(
+    clean: bool,
+    input_file: Optional[Path] = None,
+    output_file: Optional[Path] = None,
+):
+    if not clean:
+        osbooks = read_osbooks(output_file)
+    else:
+        osbooks = set()
+    if input_file is None:
+        from .remote import get_pipeline
+        pipeline = get_pipeline("sync-osbooks")
+    else:
+        pipeline = read_yml(input_file)
+    extract_resources(osbooks, pipeline)
     write_osbooks(osbooks, output_file)
 
 
 def main(args: Args):
-    extract(args.clean, args.file, args.outfile)
+    extract_and_save(args.clean, args.file, args.outfile)

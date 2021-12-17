@@ -4,8 +4,8 @@ from typing import Any
 import yaml
 
 
-def ask_confirm(book) -> bool:
-    response = input(f"Are you sure you want to delete {book}? ").lower()
+def ask_confirm(prompt: str) -> bool:
+    response = input(f"{prompt} ").lower()
     return response in ("y", "yes")
 
 

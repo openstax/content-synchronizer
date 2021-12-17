@@ -1,11 +1,13 @@
 from pathlib import Path
 import re
+from typing import Set
 
 import yaml
+
 from . import TEMPLATE_ROOT
-from .utils import read_yml, write_yml
+from .utils import ask_confirm, read_yml, write_yml
 from .osbook_utils import OSBOOKS_FILE
-from .models import Args
+from .models import Args, OSBook
 
 PIPELINE_FILE = Path(".").resolve()/"sync-osbooks.yml"
 
@@ -54,6 +56,33 @@ def create_pipeline(osbooks_path: Path):
     return pipeline_temp
 
 
+def upload_changes(pipeline: dict, yes: bool):
+    from .remote import get_pipeline, set_pipeline
+    from .extract_resources import extract_resources
+    osbooks_current: Set[OSBook] = set()
+    extract_resources(
+        osbooks_current,
+        get_pipeline("sync-osbooks")
+    )
+    osbooks_new: Set[OSBook] = set()
+    extract_resources(osbooks_new, pipeline)
+    osbooks_xor = osbooks_current ^ osbooks_new
+
+    if len(osbooks_xor) == 0:
+        print("No changes to upload.")
+        return
+
+    for book in sorted(osbooks_xor, key=lambda b: b.book_repo):
+        sign = "+"
+        if book not in osbooks_new:
+            sign = "-"
+        print(f"{sign} {book}")
+
+    prompt = "Update the sync-osbooks pipeline on concourse with the above changes?"
+    if yes or ask_confirm(prompt):
+        set_pipeline("sync-osbooks", pipeline)
+
+
 def main(args: Args):
     outfile = args.outfile
     pipeline = create_pipeline(
@@ -62,5 +91,4 @@ def main(args: Args):
     if outfile is not None:
         write_yml(pipeline, outfile)
     else:
-        from .remote import set_pipeline
-        set_pipeline("sync-osbooks", pipeline)
+        upload_changes(pipeline, args.yes)

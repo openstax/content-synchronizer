@@ -1,7 +1,7 @@
 """Pipe Manager
 
 Usage:
-    pipemgr create [-f FILE | --file=FILE] [-o OUTFILE | --output=OUTFILE]
+    pipemgr create [-f FILE | --file=FILE] [-o OUTFILE | --output=OUTFILE] [-y | --yes]
     pipemgr extract [-f FILE | --file=FILE] [-o OUTFILE | --output=OUTFILE] [-c | --clean]
     pipemgr add-book BOOK [-f FILE | --file=FILE] [--server=SERVER] [-u | --update]
     pipemgr remove-book BOOK [-f FILE | --file=FILE] [--server=SERVER] [-u | --update] [-y | --yes]
