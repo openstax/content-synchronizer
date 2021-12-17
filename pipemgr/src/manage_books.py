@@ -1,5 +1,5 @@
-from .osbook_utils import OSBook, read_osbooks, write_osbooks
-from .models import Args
+from .osbook_utils import read_osbooks, write_osbooks
+from .models import Args, OSBook
 
 
 def _ask_confirm(book) -> bool:
@@ -23,6 +23,15 @@ def remove_book(args: Args):
         write_osbooks(osbooks, args.file)
 
 
-def list_books(args):
-    for book in read_osbooks(args.file):
+def list_books(args: Args):
+    books = sorted(read_osbooks(args.file), key=lambda book: book.book_repo)
+    to_print = map(
+        (
+            (lambda b: b.book_repo)
+            if args.repo_only else
+            str
+        ),
+        books
+    )
+    for book in to_print:
         print(book)

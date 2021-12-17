@@ -7,24 +7,34 @@ import sys
 # Setup the correct module import path
 WORKING_ROOT = Path(__file__).resolve().parent
 MODULE_ROOT = WORKING_ROOT.parent
-sys.path.append(
-    str(MODULE_ROOT)
-)
+sys.path.append(str(MODULE_ROOT))
 
-import src
-src.OUTPUT_ROOT = WORKING_ROOT/"out"/"test"
-if not src.OUTPUT_ROOT.exists():
-    src.OUTPUT_ROOT.mkdir(parents=True)
-else:
-    # Start each test fresh
-    shutil.rmtree(src.OUTPUT_ROOT)
-    src.OUTPUT_ROOT.mkdir(parents=True)
 
-from src import create_pipeline, manage_books, osbook_utils, extract_resources
-from src.models import Args
-from src.utils import read_yml
+def setup_imports():
+    """All in the name of getting flake8 to be quiet about imports!"""
+    global src, create_pipeline, manage_books, osbook_utils, \
+        extract_resources, Args, OSBook, read_yml, BaseModel
 
-from pydantic import BaseModel
+    import src
+
+    src.OUTPUT_ROOT = WORKING_ROOT/"out"/"test"
+    if not src.OUTPUT_ROOT.exists():
+        src.OUTPUT_ROOT.mkdir(parents=True)
+    else:
+        # Start each test fresh
+        shutil.rmtree(src.OUTPUT_ROOT)
+        src.OUTPUT_ROOT.mkdir(parents=True)
+
+    from src import create_pipeline, manage_books, osbook_utils, \
+        extract_resources
+
+    from src.models import Args, OSBook
+    from src.utils import read_yml
+
+    from pydantic import BaseModel
+
+
+setup_imports()
 
 PIPELINE = src.OUTPUT_ROOT/"pipeline.yml"
 
@@ -56,7 +66,7 @@ EXTRACT_RES = Args(
     False
 )
 
-MY_BOOK = osbook_utils.OSBook(MNG_BOOK1.book, MNG_BOOK1.server)
+MY_BOOK = OSBook(MNG_BOOK1.book, MNG_BOOK1.server)
 books_added = 0
 
 
@@ -142,5 +152,5 @@ class TestAddJob(unittest.TestCase):
             PipelineValidator(**read_yml(PIPELINE))
         except FileNotFoundError:
             self.fail("Pipeline was not created")
-        except:
+        except Exception:
             self.fail("Pipeline was not valid yaml")

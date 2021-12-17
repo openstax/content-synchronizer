@@ -5,7 +5,7 @@ Usage:
     pipemgr extract [-f FILE | --file=FILE] [-o OUTFILE | --output=OUTFILE] [-c | --clean]
     pipemgr add-book BOOK [-f FILE | --file=FILE] [--server=SERVER] [-u | --update]
     pipemgr remove-book BOOK [-f FILE | --file=FILE] [--server=SERVER] [-u | --update] [-y | --yes]
-    pipemgr list-books [-f FILE | --file=FILE]
+    pipemgr list-books [-f FILE | --file=FILE] [-r | --repo-only]
     pipemgr (-h | --help)
 
 Options:
@@ -26,6 +26,9 @@ Options:
 
     -o OUTFILE  --output=OUTFILE
         Output results to OUTFILE
+
+    -r  --repo-only
+        When listing books, only list the repository name
 
     --server=SERVER
         The archive server for the book  [default: cnx.org]

@@ -4,7 +4,8 @@ import logging
 from typing import Optional
 
 import yaml
-from .osbook_utils import read_osbooks, write_osbooks, OSBook
+from .osbook_utils import read_osbooks, write_osbooks
+from .models import OSBook
 from .utils import read_yml
 from .models import Args
 

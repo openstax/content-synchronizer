@@ -28,7 +28,8 @@ def read_template(temp_path: str) -> str:
 
 def prepare_template(template: str, args: dict) -> str:
     # Use what is inside {{}} as keys to the args dict
-    return re.sub("({{)(.+?)(}})", lambda match: args[match.group(2)], template)
+    return re.sub(
+        "({{)(.+?)(}})", lambda match: args[match.group(2)], template)
 
 
 def create_pipeline(osbooks_path: Path, output_path: Path):

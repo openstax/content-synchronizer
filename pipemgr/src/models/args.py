@@ -14,6 +14,7 @@ class Args(NamedTuple):
     book: Optional[str]
     server: str
     yes: bool = False
+    repo_only: bool = False
 
     @staticmethod
     def from_docopts(docopts: dict) -> "Args":
@@ -23,5 +24,6 @@ class Args(NamedTuple):
             docopts["--clean"] or docopts["-c"],
             docopts["BOOK"],
             docopts["--server"],
-            docopts["-y"] or docopts["--yes"]
+            docopts["-y"] or docopts["--yes"],
+            docopts["-r"] or docopts["--repo-only"]
         )
