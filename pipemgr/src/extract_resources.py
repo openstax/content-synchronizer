@@ -11,7 +11,7 @@ from .utils import read_yml
 from .models import Args
 
 
-def extract_resources(osbooks: Optional[Set[OSBook]], pipeline: dict):
+def extract_resources(osbooks: Set[OSBook], pipeline: dict):
     if "resources" not in pipeline:
         logging.warn("No resources found")
         return
@@ -34,9 +34,9 @@ def extract_and_save(
     if not clean:
         osbooks = read_osbooks(output_file)
     else:
-        osbooks = set()
+        osbooks: Set[OSBook] = set()
     if input_file is None:
-        from .remote import get_pipeline
+        from .concourse.api import get_pipeline
         pipeline = get_pipeline("sync-osbooks")
     else:
         pipeline = read_yml(input_file)

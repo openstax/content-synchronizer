@@ -7,6 +7,7 @@ from getpass import getpass
 
 from dotenv import load_dotenv
 from requests.sessions import Session
+from .utils import expect
 
 load_dotenv('./.env')
 
@@ -27,16 +28,16 @@ def _login() -> Generator[Session, None, None]:
     with Session() as session:
         r = session.get(concourse_login)
 
-        ldap_url = re.search(ldap_url_regex, r.text).group(0)
+        ldap_url = expect(re.search(ldap_url_regex, r.text), "BUG: no ldap url found").group(0)
         ldap_login_url = f"{concourse_url}{ldap_url}"
 
         data = {"login": username, "password": password}
 
         r = session.post(ldap_login_url, data=data)
 
-        token = re.search(bearer_regex, r.text).group(1)
+        token = expect(re.search(bearer_regex, r.text), "BUG: no token found").group(1)
 
-        session.headers = {"Authorization": f"Bearer {token}"}
+        session.headers.update({"Authorization": f"Bearer {token}"})
 
         yield session
 
