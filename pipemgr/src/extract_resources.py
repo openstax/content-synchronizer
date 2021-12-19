@@ -36,8 +36,9 @@ def extract_and_save(
     else:
         osbooks: Set[OSBook] = set()
     if input_file is None:
-        from .concourse.api import get_pipeline
-        pipeline = get_pipeline("sync-osbooks")
+        from src.models.concourse_handler import ConcourseHandler
+        handler = ConcourseHandler.get()
+        pipeline = handler.get_pipeline("sync-osbooks")
     else:
         pipeline = read_yml(input_file)
     extract_resources(osbooks, pipeline)

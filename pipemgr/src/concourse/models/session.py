@@ -1,8 +1,10 @@
 import logging
 from typing import Optional
+
 import requests
 from requests.sessions import Session as RequestsSession
 from .token_provider import TokenProvider
+from ..routes import GET_TEAMS
 
 
 class Session:
@@ -16,8 +18,12 @@ class Session:
         self._token_provider = token_provider
         self._session = session
 
+    @property
+    def is_open(self):
+        return self._session is not None
+
     def _test_token(self, session: RequestsSession):
-        teams_url = f"{self.concourse_url}/api/v1/teams"
+        teams_url = f"{self.concourse_url}{GET_TEAMS}"
         for i in range(2):
             r = session.get(teams_url)
             if r.status_code != requests.codes.ok:

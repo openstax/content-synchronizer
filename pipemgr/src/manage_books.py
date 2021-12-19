@@ -1,19 +1,20 @@
 import logging
 
-from .osbook_utils import read_osbooks, write_osbooks
-from .models import Args, OSBook
-from .utils import ask_confirm
+from src.osbook_utils import read_osbooks, write_osbooks
+from src.models import Args, OSBook
+from src.utils import ask_confirm
+from src.concourse.utils import expect
 
 
 def add_book(args: Args):
     osbooks = read_osbooks(args.file)
-    osbooks.add(OSBook(args.book, args.server))
+    osbooks.add(OSBook(expect(args.book, "BUG: expected book repo"), args.server))
     write_osbooks(osbooks, args.file)
 
 
 def remove_book(args: Args):
     osbooks = read_osbooks(args.file)
-    book = OSBook(args.book, args.server)
+    book = OSBook(expect(args.book, "BUG: expected book repo"), args.server)
     if book not in osbooks:
         logging.warning(f"{book} was not in the osbooks collection")
         return

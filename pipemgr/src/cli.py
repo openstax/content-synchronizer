@@ -38,11 +38,12 @@ Options:
 from docopt import docopt
 
 from src import create_pipeline, extract_resources, manage_books
-from src.models import Args
+from src.models import Args, ConcourseHandler
+from src.concourse.utils import expect
 
 
 def cli():
-    docopts = docopt(__doc__)
+    docopts = docopt(expect(__doc__, "BUG: no doc string for docopts"))
     args = Args.from_docopts(docopts)
 
     if docopts["create"]:
@@ -58,6 +59,8 @@ def cli():
 
     if docopts["-u"] or docopts["--update"]:
         create_pipeline.main(args)
+
+    ConcourseHandler.get().close()
 
 
 if __name__ == '__main__':

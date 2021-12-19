@@ -4,10 +4,11 @@ from typing import Set
 
 import yaml
 
-from . import TEMPLATE_ROOT
-from .utils import ask_confirm, read_yml, write_yml
-from .osbook_utils import OSBOOKS_FILE
-from .models import Args, OSBook
+from src import TEMPLATE_ROOT
+from src.utils import ask_confirm, read_yml, write_yml
+from src.osbook_utils import OSBOOKS_FILE
+from src.models import Args, OSBook, ConcourseHandler
+from src.extract_resources import extract_resources
 
 PIPELINE_FILE = Path(".").resolve()/"sync-osbooks.yml"
 
@@ -57,12 +58,11 @@ def create_pipeline(osbooks_path: Path):
 
 
 def upload_changes(pipeline: dict, yes: bool):
-    from .remote import get_pipeline, set_pipeline
-    from .extract_resources import extract_resources
+    concourse = ConcourseHandler.get()
     osbooks_current: Set[OSBook] = set()
     extract_resources(
         osbooks_current,
-        get_pipeline("sync-osbooks")
+        concourse.get_pipeline("sync-osbooks")
     )
     osbooks_new: Set[OSBook] = set()
     extract_resources(osbooks_new, pipeline)
@@ -80,7 +80,7 @@ def upload_changes(pipeline: dict, yes: bool):
 
     prompt = "Update the sync-osbooks pipeline on concourse with the above changes?"
     if yes or ask_confirm(prompt):
-        set_pipeline("sync-osbooks", pipeline)
+        concourse.set_pipeline("sync-osbooks", pipeline)
 
 
 def main(args: Args):
