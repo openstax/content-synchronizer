@@ -51,9 +51,10 @@ def create_pipeline(osbooks_path: Path):
     return pipeline_temp
 
 
-def upload_changes(pipeline: dict, yes: bool):
+def upload_changes(pipeline_a: dict, yes: bool):
     concourse = ConcourseHandler.get()
-    diff = get_books_diff(pipeline)
+    pipeline_b, pipeline_verison = concourse.get_pipeline("sync-osbooks")
+    diff = get_books_diff(pipeline_a, pipeline_b)
 
     if diff.empty:
         print("No changes to upload.")
@@ -63,7 +64,7 @@ def upload_changes(pipeline: dict, yes: bool):
 
     prompt = "Update the sync-osbooks pipeline on concourse with the above changes?"
     if yes or ask_confirm(prompt):
-        concourse.set_pipeline("sync-osbooks", pipeline)
+        concourse.set_pipeline("sync-osbooks", pipeline_a, pipeline_verison)
 
 
 def main(args: Args):

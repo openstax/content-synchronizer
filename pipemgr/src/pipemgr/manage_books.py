@@ -1,5 +1,5 @@
 import logging
-from typing import Optional, Set
+from typing import Set
 
 from .osbook_utils import read_osbooks, write_osbooks, OSBOOKS_FILE
 from .models import Args, OSBook
@@ -40,15 +40,8 @@ def list_books(args: Args):
         print(book)
 
 
-def get_books_diff(
-    pipeline_a: dict,
-    pipeline_b: Optional[dict] = None
-) -> DiffResult:
+def get_books_diff(pipeline_a: dict, pipeline_b: dict) -> DiffResult:
     diff_result = DiffResult([], [])
-
-    if pipeline_b is None:
-        concourse = ConcourseHandler.get()
-        pipeline_b = concourse.get_pipeline("sync-osbooks")
 
     osbooks_current: Set[OSBook] = set()
     extract_resources(osbooks_current, pipeline_b)
@@ -82,10 +75,12 @@ def print_diff(diff: DiffResult):
 def diff_books(args: Args):
     from .create_pipeline import create_pipeline
 
-    pipeline = create_pipeline(
+    concourse = ConcourseHandler.get()
+    pipeline_a = create_pipeline(
         args.file or OSBOOKS_FILE,
     )
-    diff = get_books_diff(pipeline)
+    pipeline_b, _ = concourse.get_pipeline("sync-osbooks")
+    diff = get_books_diff(pipeline_a, pipeline_b)
     if diff.empty:
         print("No changes.")
     else:

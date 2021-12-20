@@ -1,6 +1,7 @@
-import logging
+from typing import Tuple
 
 from ..concourse.models import Session, LDAPTokenProvider, DiskTokenCache
+from ..concourse.utils import expect
 from .. import OUTPUT_ROOT
 
 
@@ -33,19 +34,28 @@ class ConcourseHandler:
     def close(self):
         self._session.close()
 
-    def get_pipeline(self, pipeline: str) -> dict:
-        pipeline_cfg = {}
-        try:
-            conn = self.connection
-            pipeline_cfg = conn.get(
-                PIPELINE_CONFIG_URL.format(pipeline=pipeline)).json()["config"]
-        except Exception as e:
-            logging.error(e)
-        return pipeline_cfg
-
-    def set_pipeline(self, pipeline: str, config: dict):
+    def get_pipeline(self, pipeline: str) -> Tuple[dict, str]:
         conn = self.connection
-        conn.put(PIPELINE_CONFIG_URL.format(pipeline=pipeline, data=config))
+        r = conn.get(PIPELINE_CONFIG_URL.format(pipeline=pipeline))
+        r.raise_for_status()
+        pipeline_version = expect(
+            r.headers.get("X-Concourse-Config-Version"),
+            "BUG: X-Concourse-Config-Version not found"
+        )
+        pipeline_cfg = r.json()["config"]
+        return (pipeline_cfg, pipeline_version)
+
+    def set_pipeline(self, pipeline: str, config: dict, pipeline_version: str):
+        import json
+        conn = self.connection
+        headers = {"Content-Type": "application/json",
+                   "X-Concourse-Config-Version": pipeline_version}
+        r = conn.put(
+            PIPELINE_CONFIG_URL.format(pipeline=pipeline),
+            data=json.dumps(config),
+            headers=headers
+        )
+        r.raise_for_status()
 
     @staticmethod
     def get():
