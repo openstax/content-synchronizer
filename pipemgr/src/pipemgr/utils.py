@@ -9,6 +9,10 @@ def ask_confirm(prompt: str) -> bool:
     return response in ("y", "yes")
 
 
+def load_yaml(yaml_str: str):
+    return yaml.load(yaml_str, Loader=yaml.SafeLoader)
+
+
 def read_yml(file_path: Path):
     with open(file_path, "r") as yaml_in:
         return yaml.load(yaml_in, Loader=yaml.SafeLoader)

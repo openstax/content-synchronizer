@@ -13,7 +13,7 @@ class Session:
         concourse_url: str,
         token_provider: TokenProvider,
         session: Optional[RequestsSession] = None
-    ) -> None:
+    ):
         self.concourse_url = concourse_url
         self._token_provider = token_provider
         self._session = session

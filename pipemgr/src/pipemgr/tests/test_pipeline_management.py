@@ -2,41 +2,34 @@ import shutil
 import unittest
 from typing import List, Union
 from pathlib import Path
-import sys
 
-# Setup the correct module import path
-WORKING_ROOT = Path(__file__).resolve().parent
-MODULE_ROOT = WORKING_ROOT.parent
-sys.path.append(str(MODULE_ROOT))
+import pipemgr
+from pydantic import BaseModel
+from pipemgr.concourse.utils import expect
 
 
 def setup_imports():
-    """All in the name of getting flake8 to be quiet about imports!"""
-    global src, create_pipeline, manage_books, osbook_utils, \
-        extract_resources, Args, OSBook, read_yml, BaseModel
+    global create_pipeline, manage_books, osbook_utils, extract_resources, \
+        Args, OSBook, read_yml, BaseModel
 
-    import src
-
-    src.OUTPUT_ROOT = WORKING_ROOT/"out"/"test"
-    if not src.OUTPUT_ROOT.exists():
-        src.OUTPUT_ROOT.mkdir(parents=True)
+    pipemgr.OUTPUT_ROOT = Path(__file__).parent/"out"/"test"
+    if not pipemgr.OUTPUT_ROOT.exists():
+        pipemgr.OUTPUT_ROOT.mkdir(parents=True)
     else:
         # Start each test fresh
-        shutil.rmtree(src.OUTPUT_ROOT)
-        src.OUTPUT_ROOT.mkdir(parents=True)
+        shutil.rmtree(pipemgr.OUTPUT_ROOT)
+        pipemgr.OUTPUT_ROOT.mkdir(parents=True)
 
-    from src import create_pipeline, manage_books, osbook_utils, \
+    from pipemgr import create_pipeline, manage_books, osbook_utils, \
         extract_resources
 
-    from src.models import Args, OSBook
-    from src.utils import read_yml
-
-    from pydantic import BaseModel
+    from pipemgr.models import Args, OSBook
+    from pipemgr.utils import read_yml
 
 
 setup_imports()
 
-PIPELINE = src.OUTPUT_ROOT/"pipeline.yml"
+PIPELINE = pipemgr.OUTPUT_ROOT/"pipeline.yml"
 
 # Test the CLI and the underlying functionality at the same time.
 MNG_BOOK1 = Args(
@@ -66,7 +59,7 @@ EXTRACT_RES = Args(
     False
 )
 
-MY_BOOK = OSBook(MNG_BOOK1.book, MNG_BOOK1.server)
+MY_BOOK = OSBook(expect(MNG_BOOK1.book, "Expected book repo"), MNG_BOOK1.server)
 books_added = 0
 
 

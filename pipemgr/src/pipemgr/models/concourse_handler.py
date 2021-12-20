@@ -1,12 +1,12 @@
 import logging
 
-from src.concourse.models import Session, LDAPTokenProvider, DiskTokenCache
-from src import OUTPUT_ROOT
+from pipemgr.concourse.models import Session, LDAPTokenProvider, DiskTokenCache
+from pipemgr import OUTPUT_ROOT
 
 
-concourse_url = "https://concourse-v7.openstax.org"
-pipeline_url = f"{concourse_url}/api/v1/teams/CE/pipelines"
-pipeline_config_url = f"{pipeline_url}/{{pipeline}}/config"
+CONCOURSE_URL = "https://concourse-v7.openstax.org"
+PIPELINE_URL = f"{CONCOURSE_URL}/api/v1/teams/CE/pipelines"
+PIPELINE_CONFIG_URL = f"{PIPELINE_URL}/{{pipeline}}/config"
 
 
 class ConcourseHandler:
@@ -16,9 +16,9 @@ class ConcourseHandler:
     """
     __instance = None
 
-    def __init__(self) -> None:
+    def __init__(self):
         self._session = Session(
-            concourse_url,
+            CONCOURSE_URL,
             LDAPTokenProvider(DiskTokenCache(OUTPUT_ROOT/"token.txt"))
         )
 
@@ -28,7 +28,7 @@ class ConcourseHandler:
 
     @property
     def concourse_url(self):
-        return concourse_url
+        return CONCOURSE_URL
 
     def close(self):
         self._session.close()
@@ -38,14 +38,14 @@ class ConcourseHandler:
         try:
             conn = self.connection
             pipeline_cfg = conn.get(
-                pipeline_config_url.format(pipeline=pipeline)).json()["config"]
+                PIPELINE_CONFIG_URL.format(pipeline=pipeline)).json()["config"]
         except Exception as e:
             logging.error(e)
         return pipeline_cfg
 
     def set_pipeline(self, pipeline: str, config: dict):
         conn = self.connection
-        conn.put(pipeline_config_url.format(pipeline=pipeline, data=config))
+        conn.put(PIPELINE_CONFIG_URL.format(pipeline=pipeline, data=config))
 
     @staticmethod
     def get():

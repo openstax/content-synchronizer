@@ -1,9 +1,9 @@
 from pathlib import Path
 from typing import Optional, Set
 
-from src.utils import read_yml, write_yml
-from src import OUTPUT_ROOT
-from src.models import OSBook
+from .utils import read_yml, write_yml
+from . import OUTPUT_ROOT
+from .models import OSBook
 
 OSBOOKS_FILE = OUTPUT_ROOT/"osbooks.yml"
 

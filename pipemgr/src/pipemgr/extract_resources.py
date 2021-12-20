@@ -1,10 +1,7 @@
 from pathlib import Path
-# import sys
 import logging
 from typing import Optional, Set
 
-# import yaml
-# import requests
 from .osbook_utils import read_osbooks, write_osbooks
 from .models import OSBook
 from .utils import read_yml
@@ -36,7 +33,7 @@ def extract_and_save(
     else:
         osbooks: Set[OSBook] = set()
     if input_file is None:
-        from src.models.concourse_handler import ConcourseHandler
+        from .models.concourse_handler import ConcourseHandler
         handler = ConcourseHandler.get()
         pipeline = handler.get_pipeline("sync-osbooks")
     else:

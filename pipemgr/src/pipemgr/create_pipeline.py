@@ -1,14 +1,12 @@
-from pathlib import Path
 import re
+from pathlib import Path
 from typing import Set
 
-import yaml
-
-from src import TEMPLATE_ROOT
-from src.utils import ask_confirm, read_yml, write_yml
-from src.osbook_utils import OSBOOKS_FILE
-from src.models import Args, OSBook, ConcourseHandler
-from src.extract_resources import extract_resources
+from . import TEMPLATE_ROOT
+from .utils import ask_confirm, read_yml, write_yml, load_yaml
+from .osbook_utils import OSBOOKS_FILE
+from .models import Args, OSBook, ConcourseHandler
+from .extract_resources import extract_resources
 
 PIPELINE_FILE = Path(".").resolve()/"sync-osbooks.yml"
 
@@ -19,10 +17,6 @@ class OSBooksError(Exception):
 
     def __str__(self) -> str:
         return self.message
-
-
-def load_yaml(yaml_str: str):
-    return yaml.load(yaml_str, Loader=yaml.SafeLoader)
 
 
 def read_template(temp_path: str) -> str:

@@ -1,9 +1,9 @@
 import logging
 
-from src.osbook_utils import read_osbooks, write_osbooks
-from src.models import Args, OSBook
-from src.utils import ask_confirm
-from src.concourse.utils import expect
+from .osbook_utils import read_osbooks, write_osbooks
+from .models import Args, OSBook
+from .utils import ask_confirm
+from .concourse.utils import expect
 
 
 def add_book(args: Args):

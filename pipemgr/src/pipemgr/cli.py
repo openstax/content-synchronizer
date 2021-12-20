@@ -37,9 +37,9 @@ Options:
 
 from docopt import docopt
 
-from src import create_pipeline, extract_resources, manage_books
-from src.models import Args, ConcourseHandler
-from src.concourse.utils import expect
+from . import create_pipeline, extract_resources, manage_books
+from .models import Args, ConcourseHandler
+from .concourse.utils import expect
 
 
 def cli():

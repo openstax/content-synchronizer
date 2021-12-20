@@ -3,8 +3,7 @@ from pathlib import Path
 
 
 class DiskTokenCache:
-    def __init__(self, location: Union[Path, str]) -> None:
-        super().__init__()
+    def __init__(self, location: Union[Path, str]):
         self.location = Path(location)
         self._token: Optional[str] = None
 

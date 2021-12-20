@@ -3,7 +3,6 @@ from getpass import getpass
 from typing import Optional
 
 from requests.sessions import Session
-
 from .token_cache import TokenCache
 from ..utils import expect
 
