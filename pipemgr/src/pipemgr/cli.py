@@ -6,6 +6,7 @@ Usage:
     pipemgr add-book BOOK [-f FILE | --file=FILE] [--server=SERVER] [-u | --update]
     pipemgr remove-book BOOK [-f FILE | --file=FILE] [--server=SERVER] [-u | --update] [-y | --yes]
     pipemgr list-books [-f FILE | --file=FILE] [-r | --repo-only]
+    pipemgr diff-books [-f FILE | --file=FILE]
     pipemgr (-h | --help)
 
 Options:
@@ -56,6 +57,8 @@ def cli():
         manage_books.remove_book(args)
     elif docopts["list-books"]:
         manage_books.list_books(args)
+    elif docopts["diff-books"]:
+        manage_books.diff_books(args)
 
     if docopts["-u"] or docopts["--update"]:
         create_pipeline.main(args)

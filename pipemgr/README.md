@@ -8,7 +8,6 @@ Use `poetry install --no-dev` to install dependencies. Alternatively, use the do
 > - Extracting resources will only add books to your local list that were not in it already
 > - If you want to start from an empty book list, you can use the `clean` option
 > - Unless you use the `clean` option, extracting will **never** remove books from your local list
-> - Make sure to configure your .env file to include your CONCOURSE_USERNAME and CONCOURSE_PASSWORD
 
 ```bash
 # Enter the tool's parent directory
@@ -31,7 +30,10 @@ poetry run pipemgr add-book osbooks-college-physics
 # Remove osbooks-us-history (server must match as well, default is cnx.org)
 poetry run pipemgr remove-book osbooks-us-history --server qa
 
-# Set the pipeline
+# Get a list of differences
+poetry run pipemgr diff-books
+
+# Get a list of differences and set the pipeline
 poetry run pipemgr create
 
 # Use poetry run pipemgr --help for more information about the command
@@ -40,11 +42,13 @@ poetry run pipemgr create
 # Running with Docker
 All of the same commands apply; however, `pipemgr` is an installed package on the docker image. Consequently, you do not need to start each command with `poetry run` inside the docker container. 
 
-### Here are helpful aliases that exist in the container
-```bash
-alias extract='pipemgr extract'
-alias publish='pipemgr create'
-```
+## Volumes
+If you want to keep your place, you should mount a volume over `~/.pipemgr`
+
+This will persist your oauth token and your osbooks list
+
+## Here are helpful aliases that exist in the container
+[Here](./env/.bashrc) are some useful aliases that you can use in the docker container.
 
 # Running tests
 

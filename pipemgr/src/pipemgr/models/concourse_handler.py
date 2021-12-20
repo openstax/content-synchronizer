@@ -1,7 +1,7 @@
 import logging
 
-from pipemgr.concourse.models import Session, LDAPTokenProvider, DiskTokenCache
-from pipemgr import OUTPUT_ROOT
+from ..concourse.models import Session, LDAPTokenProvider, DiskTokenCache
+from .. import OUTPUT_ROOT
 
 
 CONCOURSE_URL = "https://concourse-v7.openstax.org"

@@ -7,4 +7,3 @@ __pycache__/
 **dist
 sync-osbooks.yml
 .vscode
-.env

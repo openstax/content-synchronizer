@@ -6,35 +6,31 @@ from pathlib import Path
 import pipemgr
 from pydantic import BaseModel
 from pipemgr.concourse.utils import expect
+from pipemgr.models import Args, OSBook
+from pipemgr.utils import read_yml
 
 
 def setup_imports():
-    global create_pipeline, manage_books, osbook_utils, extract_resources, \
-        Args, OSBook, read_yml, BaseModel
+    global create_pipeline, manage_books, osbook_utils, extract_resources
 
-    pipemgr.OUTPUT_ROOT = Path(__file__).parent/"out"/"test"
-    if not pipemgr.OUTPUT_ROOT.exists():
-        pipemgr.OUTPUT_ROOT.mkdir(parents=True)
-    else:
+    pipemgr.OUTPUT_ROOT = Path(__file__).parent/"out"
+    if pipemgr.OUTPUT_ROOT.exists():
         # Start each test fresh
         shutil.rmtree(pipemgr.OUTPUT_ROOT)
-        pipemgr.OUTPUT_ROOT.mkdir(parents=True)
+    pipemgr.OUTPUT_ROOT.mkdir(parents=True)
 
     from pipemgr import create_pipeline, manage_books, osbook_utils, \
         extract_resources
 
-    from pipemgr.models import Args, OSBook
-    from pipemgr.utils import read_yml
-
 
 setup_imports()
 
-PIPELINE = pipemgr.OUTPUT_ROOT/"pipeline.yml"
+PIPELINE_PATH = pipemgr.OUTPUT_ROOT/"pipeline.yml"
 
 # Test the CLI and the underlying functionality at the same time.
 MNG_BOOK1 = Args(
     None,
-    PIPELINE,
+    PIPELINE_PATH,
     False,
     "TEST",
     "example.com",
@@ -51,7 +47,7 @@ MNG_BOOK2 = Args(
 )
 
 EXTRACT_RES = Args(
-    PIPELINE,
+    PIPELINE_PATH,
     None,
     False,
     None,
@@ -121,7 +117,7 @@ class TestAddJob(unittest.TestCase):
 
     def test_c_create_pipeline(self):
         create_pipeline.main(MNG_BOOK1)
-        self.assertTrue(PIPELINE.exists())
+        self.assertTrue(PIPELINE_PATH.exists())
 
     def test_d_book_extract(self):
         osbook_utils.OSBOOKS_FILE.rename(
@@ -142,8 +138,19 @@ class TestAddJob(unittest.TestCase):
 
     def test_f_pipeline_valid_yaml(self):
         try:
-            PipelineValidator(**read_yml(PIPELINE))
+            PipelineValidator(**read_yml(PIPELINE_PATH))
         except FileNotFoundError:
             self.fail("Pipeline was not created")
         except Exception:
             self.fail("Pipeline was not valid yaml")
+
+    def test_g_book_no_diff(self):
+        pipeline_a = read_yml(PIPELINE_PATH)
+        pipeline_b = read_yml(PIPELINE_PATH)
+        self.assertEqual(manage_books.get_books_diff(pipeline_a, pipeline_b).empty, True)
+
+    def test_h_book_with_diff(self):
+        pipeline_a = read_yml(PIPELINE_PATH)
+        pipeline_b = read_yml(PIPELINE_PATH)
+        pipeline_b["resources"] = []
+        self.assertEqual(manage_books.get_books_diff(pipeline_a, pipeline_b).empty, False)

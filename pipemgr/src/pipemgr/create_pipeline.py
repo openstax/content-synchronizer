@@ -1,12 +1,11 @@
 import re
 from pathlib import Path
-from typing import Set
 
 from . import TEMPLATE_ROOT
 from .utils import ask_confirm, read_yml, write_yml, load_yaml
 from .osbook_utils import OSBOOKS_FILE
-from .models import Args, OSBook, ConcourseHandler
-from .extract_resources import extract_resources
+from .manage_books import print_diff, get_books_diff
+from .models import Args, ConcourseHandler
 
 PIPELINE_FILE = Path(".").resolve()/"sync-osbooks.yml"
 
@@ -32,6 +31,7 @@ def prepare_template(template: str, args: dict) -> str:
 def create_pipeline(osbooks_path: Path):
     if not osbooks_path.exists():
         raise OSBooksError
+    # NOTE: read_yml instead of read_osbooks because we want a list of dicts here
     osbooks = read_yml(osbooks_path)
     if len(osbooks) == 0:
         raise OSBooksError
@@ -53,24 +53,13 @@ def create_pipeline(osbooks_path: Path):
 
 def upload_changes(pipeline: dict, yes: bool):
     concourse = ConcourseHandler.get()
-    osbooks_current: Set[OSBook] = set()
-    extract_resources(
-        osbooks_current,
-        concourse.get_pipeline("sync-osbooks")
-    )
-    osbooks_new: Set[OSBook] = set()
-    extract_resources(osbooks_new, pipeline)
-    osbooks_xor = osbooks_current ^ osbooks_new
+    diff = get_books_diff(pipeline)
 
-    if len(osbooks_xor) == 0:
+    if diff.empty:
         print("No changes to upload.")
         return
 
-    for book in sorted(osbooks_xor, key=lambda b: b.book_repo):
-        sign = "+"
-        if book not in osbooks_new:
-            sign = "-"
-        print(f"{sign} {book}")
+    print_diff(diff)
 
     prompt = "Update the sync-osbooks pipeline on concourse with the above changes?"
     if yes or ask_confirm(prompt):
