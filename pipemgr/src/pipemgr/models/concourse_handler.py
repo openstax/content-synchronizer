@@ -37,6 +37,9 @@ class ConcourseHandler:
     def get_pipeline(self, pipeline: str) -> Tuple[dict, str]:
         conn = self.connection
         r = conn.get(PIPELINE_CONFIG_URL.format(pipeline=pipeline))
+        # https://github.com/concourse/concourse/blob/d55be66cc6b10101a8b4ddd9122e437cb10ccf52/go-concourse/concourse/configs.go#L40
+        if r.status_code == 404:
+            return ({}, "")
         r.raise_for_status()
         pipeline_version = expect(
             r.headers.get("X-Concourse-Config-Version"),
@@ -46,13 +49,12 @@ class ConcourseHandler:
         return (pipeline_cfg, pipeline_version)
 
     def set_pipeline(self, pipeline: str, config: dict, pipeline_version: str):
-        import json
         conn = self.connection
-        headers = {"Content-Type": "application/json",
-                   "X-Concourse-Config-Version": pipeline_version}
+        # https://github.com/concourse/concourse/blob/d55be66cc6b10101a8b4ddd9122e437cb10ccf52/go-concourse/concourse/configs.go#L76
+        headers = {"X-Concourse-Config-Version": pipeline_version}
         r = conn.put(
             PIPELINE_CONFIG_URL.format(pipeline=pipeline),
-            data=json.dumps(config),
+            json=config,
             headers=headers
         )
         r.raise_for_status()
