@@ -48,7 +48,7 @@ def mock_get_token(session: MockSession, force_new: bool, concourse_url: str):
 
 def test_session_retry():
     """Check that the session will attempt to get a new token if the first one fails"""
-    concourse_sessions.Session = MockSession
+    concourse_sessions.Client = MockSession
 
     LDAPTokenProvider.get_token = MagicMock(side_effect=mock_get_token)
     token_provider = LDAPTokenProvider(DiskTokenCache("NEVER_USED"))

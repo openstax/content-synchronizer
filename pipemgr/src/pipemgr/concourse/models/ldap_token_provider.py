@@ -2,7 +2,7 @@ import re
 from getpass import getpass
 from typing import Optional
 
-from requests.sessions import Session
+from httpx import Client
 from .token_cache import TokenCache
 from ..utils import expect
 
@@ -15,10 +15,10 @@ class LDAPTokenProvider():
         self._token: Optional[str] = None
         self._token_cache = token_cache
 
-    def _get_token(self, session: Session, concourse_url: str) -> str:
+    def _get_token(self, session: Client, concourse_url: str) -> str:
         concourse_login = f"{concourse_url}/sky/login"
 
-        r = session.get(concourse_login)
+        r = session.get(concourse_login, follow_redirects=True)
 
         ldap_url = expect(
             re.search(_LDAP_URL_REGEX, r.text),
@@ -33,7 +33,7 @@ class LDAPTokenProvider():
 
         data = {"login": username, "password": password}
 
-        r = session.post(ldap_login_url, data=data)
+        r = session.post(ldap_login_url, data=data, follow_redirects=True)
 
         token = expect(
             re.search(_BEARER_REGEX, r.text),
@@ -42,7 +42,7 @@ class LDAPTokenProvider():
 
         return token
 
-    def get_token(self, session: Session, force_new: bool, concourse_url: str) -> str:
+    def get_token(self, session: Client, force_new: bool, concourse_url: str) -> str:
         token: Optional[str] = None
         if not force_new:
             token = self._token_cache.get_token()

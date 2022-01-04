@@ -10,7 +10,7 @@ from .utils import read_yml
 
 def extract_resources(osbooks: Set[OSBook], pipeline: dict):
     if "resources" not in pipeline:
-        logging.warn("No resources found")
+        logging.warning("No resources found")
         return
     resources = pipeline["resources"]
     for resource in resources:
@@ -19,7 +19,7 @@ def extract_resources(osbooks: Set[OSBook], pipeline: dict):
             continue
         osbooks.add(OSBook.from_pipeline_resource(resource))
     if len(osbooks) == 0:
-        logging.warn("No books found")
+        logging.warning("No books found")
         return
 
 

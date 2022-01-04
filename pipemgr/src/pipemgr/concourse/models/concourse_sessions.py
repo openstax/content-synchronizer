@@ -2,8 +2,8 @@ import logging
 from contextlib import contextmanager
 from typing import Generator, Tuple
 
-import requests
-from requests.sessions import Session
+import httpx
+from httpx import Client
 
 from ..utils import expect
 from .token_provider import TokenProvider
@@ -40,11 +40,11 @@ class ConcourseSession:
     def _build_pipeline_url(self, team: str, pipeline: str):
         return self._build_teams_url(team, "pipelines", pipeline, "config")
 
-    def _test_token(self, session: Session):
+    def _test_token(self, session: Client):
         teams_url = self._build_teams_url()
         for i in range(2):
             r = session.get(teams_url)
-            if r.status_code != requests.codes.ok:
+            if r.status_code != httpx.codes.OK:
                 logging.warning(
                     f"Got {r.status_code} when trying to access {teams_url}"
                 )
@@ -54,15 +54,15 @@ class ConcourseSession:
                     session.headers.update({"Authorization": ""})
                     self._update_token(session, True)
 
-    def _update_token(self, session: Session, force_new: bool):
+    def _update_token(self, session: Client, force_new: bool):
         token = self._token_provider.get_token(
             session, force_new, self.concourse_url
         )
         session.headers.update({"Authorization": f"bearer {token}"})
 
-    def _login(self) -> Session:
+    def _login(self) -> Client:
         self.close()  # close any connections that might be lingering
-        session = Session()
+        session = Client()
         self._update_token(session, False)
         self._test_token(session)
         return session
