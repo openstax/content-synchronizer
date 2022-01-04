@@ -1,7 +1,8 @@
 from unittest.mock import MagicMock
 
-from pipemgr.concourse.models import session, LDAPTokenProvider, DiskTokenCache, ldap_token_provider
-
+import pipemgr.concourse.models.concourse_sessions as concourse_sessions
+from pipemgr.concourse.models import (DiskTokenCache, LDAPTokenProvider,
+                                      ldap_token_provider)
 
 # TODO: These tests could be better:
 # Check that tokens are only tried twice before an exception is raised
@@ -47,17 +48,19 @@ def mock_get_token(session: MockSession, force_new: bool, concourse_url: str):
 
 def test_session_retry():
     """Check that the session will attempt to get a new token if the first one fails"""
-    session.RequestsSession = MockSession
+    concourse_sessions.Session = MockSession
 
     LDAPTokenProvider.get_token = MagicMock(side_effect=mock_get_token)
     token_provider = LDAPTokenProvider(DiskTokenCache("NEVER_USED"))
-    my_session = session.Session(
+    my_session = concourse_sessions.ConcourseSession(
         "NEVER_USED",
         token_provider
     )
-    my_session.get_connection(False)
-    LDAPTokenProvider.get_token.assert_any_call(my_session._session, False, "NEVER_USED")
-    LDAPTokenProvider.get_token.assert_any_call(my_session._session, True, "NEVER_USED")
+    _ = my_session.connection
+    LDAPTokenProvider.get_token.assert_any_call(
+        my_session._session, False, "NEVER_USED")
+    LDAPTokenProvider.get_token.assert_any_call(
+        my_session._session, True, "NEVER_USED")
     assert LDAPTokenProvider.get_token.call_count == 2
     assert my_session.is_open
 

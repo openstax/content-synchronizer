@@ -1,17 +1,18 @@
 import logging
 from typing import Set
 
-from .osbook_utils import read_osbooks, write_osbooks, OSBOOKS_FILE
-from .models import Args, OSBook
-from .utils import ask_confirm
+from . import concourse_session_factory
 from .concourse.utils import expect
-from .models import ConcourseHandler, DiffResult
 from .extract_resources import extract_resources
+from .models import Args, DiffResult, OSBook
+from .osbook_utils import OSBOOKS_FILE, read_osbooks, write_osbooks
+from .utils import ask_confirm
 
 
 def add_book(args: Args):
     osbooks = read_osbooks(args.file)
-    osbooks.add(OSBook(expect(args.book, "BUG: expected book repo"), args.server))
+    osbooks.add(
+        OSBook(expect(args.book, "BUG: expected book repo"), args.server))
     write_osbooks(osbooks, args.file)
 
 
@@ -40,8 +41,8 @@ def list_books(args: Args):
         print(book)
 
 
-def get_books_diff(pipeline_a: dict, pipeline_b: dict) -> DiffResult:
-    diff_result = DiffResult([], [])
+def get_books_diff(pipeline_a: dict, pipeline_b: dict) -> DiffResult[OSBook]:
+    diff_result: DiffResult[OSBook] = DiffResult()
 
     osbooks_current: Set[OSBook] = set()
     extract_resources(osbooks_current, pipeline_b)
@@ -60,28 +61,18 @@ def get_books_diff(pipeline_a: dict, pipeline_b: dict) -> DiffResult:
     return diff_result
 
 
-def print_diff(diff: DiffResult):
-    from itertools import chain
-
-    unified = chain(
-        map(lambda b: f"+ {b}", diff.added),
-        map(lambda b: f"- {b}", diff.removed)
-    )
-
-    for output in sorted(unified):
-        print(output)
-
-
 def diff_books(args: Args):
-    from .create_pipeline import create_pipeline
+    from .create_pipeline import create_pipeline_from_file
 
-    concourse = ConcourseHandler.get()
-    pipeline_a = create_pipeline(
+    pipeline_a = create_pipeline_from_file(
         args.file or OSBOOKS_FILE,
     )
-    pipeline_b, _ = concourse.get_pipeline("sync-osbooks")
+
+    with concourse_session_factory() as session:
+        pipeline_b, _ = session.get_pipeline("CE", "sync-osbooks")
+
     diff = get_books_diff(pipeline_a, pipeline_b)
     if diff.empty:
         print("No changes.")
     else:
-        print_diff(diff)
+        diff.display_unified()

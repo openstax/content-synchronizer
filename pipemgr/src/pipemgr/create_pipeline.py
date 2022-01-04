@@ -1,11 +1,12 @@
-import re
 from pathlib import Path
+from typing import List
 
-from . import TEMPLATE_ROOT
-from .utils import ask_confirm, read_yml, write_yml, load_yaml
+from . import TEMPLATE_ROOT, concourse_session_factory
+from .manage_books import get_books_diff
+from .models import Args
 from .osbook_utils import OSBOOKS_FILE
-from .manage_books import print_diff, get_books_diff
-from .models import Args, ConcourseHandler
+from .utils import (ask_confirm, load_yaml, prepare_template, read_yml,
+                    write_yml)
 
 PIPELINE_FILE = Path(".").resolve()/"sync-osbooks.yml"
 
@@ -22,17 +23,7 @@ def read_template(temp_path: str) -> str:
     return (TEMPLATE_ROOT/temp_path).read_text()
 
 
-def prepare_template(template: str, args: dict) -> str:
-    # Use what is inside {{}} as keys to the args dict
-    return re.sub(
-        "({{)(.+?)(}})", lambda match: args[match.group(2)], template)
-
-
-def create_pipeline(osbooks_path: Path):
-    if not osbooks_path.exists():
-        raise OSBooksError
-    # NOTE: read_yml instead of read_osbooks because we want a list of dicts here
-    osbooks = read_yml(osbooks_path)
+def create_pipeline(osbooks: List[dict]) -> dict:
     if len(osbooks) == 0:
         raise OSBooksError
     pipeline_temp = read_yml(TEMPLATE_ROOT/"pipeline.yml")
@@ -51,26 +42,37 @@ def create_pipeline(osbooks_path: Path):
     return pipeline_temp
 
 
+def create_pipeline_from_file(osbooks_path: Path):
+    if not osbooks_path.exists():
+        raise OSBooksError
+    # NOTE: read_yml instead of read_osbooks because we want a list of dicts here
+    osbooks = read_yml(osbooks_path)
+    return create_pipeline(osbooks)
+
+
 def upload_changes(pipeline_a: dict, yes: bool):
-    concourse = ConcourseHandler.get()
-    pipeline_b, pipeline_verison = concourse.get_pipeline("sync-osbooks")
-    diff = get_books_diff(pipeline_a, pipeline_b)
+    with concourse_session_factory() as session:
+        pipeline_b, pipeline_verison = session.get_pipeline(
+            "CE", "sync-osbooks")
 
-    if diff.empty:
-        print("No changes to upload.")
-        return
+        diff = get_books_diff(pipeline_a, pipeline_b)
 
-    print_diff(diff)
+        if diff.empty:
+            print("No changes to upload.")
+            return
 
-    prompt = "Update the sync-osbooks pipeline on concourse with the above changes?"
-    if yes or ask_confirm(prompt):
-        concourse.set_pipeline("sync-osbooks", pipeline_a, pipeline_verison)
+        diff.display_unified()
+
+        prompt = "Update the sync-osbooks pipeline on concourse with the above changes?"
+        if yes or ask_confirm(prompt):
+            session.set_pipeline("CE", "sync-osbooks",
+                                 pipeline_a, pipeline_verison)
 
 
 def main(args: Args):
     outfile = args.outfile
-    pipeline = create_pipeline(
-        args.file or OSBOOKS_FILE,
+    pipeline = create_pipeline_from_file(
+        args.file or OSBOOKS_FILE
     )
     if outfile is not None:
         write_yml(pipeline, outfile)

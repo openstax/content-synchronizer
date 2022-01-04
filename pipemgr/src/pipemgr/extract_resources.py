@@ -1,11 +1,11 @@
-from pathlib import Path
 import logging
+from pathlib import Path
 from typing import Optional, Set
 
+from . import concourse_session_factory
+from .models import Args, OSBook
 from .osbook_utils import read_osbooks, write_osbooks
-from .models import OSBook
 from .utils import read_yml
-from .models import Args
 
 
 def extract_resources(osbooks: Set[OSBook], pipeline: dict):
@@ -33,9 +33,8 @@ def extract_and_save(
     else:
         osbooks: Set[OSBook] = set()
     if input_file is None:
-        from .models.concourse_handler import ConcourseHandler
-        concourse = ConcourseHandler.get()
-        pipeline, _ = concourse.get_pipeline("sync-osbooks")
+        with concourse_session_factory() as session:
+            pipeline, _ = session.get_pipeline("CE", "sync-osbooks")
     else:
         pipeline = read_yml(input_file)
     extract_resources(osbooks, pipeline)

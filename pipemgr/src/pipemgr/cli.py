@@ -39,8 +39,8 @@ Options:
 from docopt import docopt
 
 from . import create_pipeline, extract_resources, manage_books
-from .models import Args, ConcourseHandler
 from .concourse.utils import expect
+from .models import Args
 
 
 def cli():
@@ -62,8 +62,6 @@ def cli():
 
     if docopts["-u"] or docopts["--update"]:
         create_pipeline.main(args)
-
-    ConcourseHandler.get().close()
 
 
 if __name__ == '__main__':
