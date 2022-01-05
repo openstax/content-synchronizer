@@ -56,11 +56,11 @@ def test_session_retry():
         "NEVER_USED",
         token_provider
     )
-    _ = my_session.connection
+    _ = my_session._make_request(lambda c: c.get(""))
     LDAPTokenProvider.get_token.assert_any_call(
-        my_session._session, False, "NEVER_USED")
+        my_session._client, False, "NEVER_USED")
     LDAPTokenProvider.get_token.assert_any_call(
-        my_session._session, True, "NEVER_USED")
+        my_session._client, True, "NEVER_USED")
     assert LDAPTokenProvider.get_token.call_count == 2
     assert my_session.is_open
 

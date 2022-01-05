@@ -15,10 +15,10 @@ class LDAPTokenProvider():
         self._token: Optional[str] = None
         self._token_cache = token_cache
 
-    def _get_token(self, session: Client, concourse_url: str) -> str:
+    def _get_token(self, client: Client, concourse_url: str) -> str:
         concourse_login = f"{concourse_url}/sky/login"
 
-        r = session.get(concourse_login, follow_redirects=True)
+        r = client.get(concourse_login, follow_redirects=True)
 
         ldap_url = expect(
             re.search(_LDAP_URL_REGEX, r.text),
@@ -33,7 +33,7 @@ class LDAPTokenProvider():
 
         data = {"login": username, "password": password}
 
-        r = session.post(ldap_login_url, data=data, follow_redirects=True)
+        r = client.post(ldap_login_url, data=data, follow_redirects=True)
 
         token = expect(
             re.search(_BEARER_REGEX, r.text),
@@ -42,11 +42,11 @@ class LDAPTokenProvider():
 
         return token
 
-    def get_token(self, session: Client, force_new: bool, concourse_url: str) -> str:
+    def get_token(self, client: Client, force_new: bool, concourse_url: str) -> str:
         token: Optional[str] = None
         if not force_new:
             token = self._token_cache.get_token()
         if token is None:
-            token = self._get_token(session, concourse_url)
+            token = self._get_token(client, concourse_url)
             self._token_cache.put_token(token)
         return token

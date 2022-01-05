@@ -1,9 +1,9 @@
 import logging
 from contextlib import contextmanager
-from typing import Generator, Tuple
+from typing import Callable, Generator, Tuple
 
 import httpx
-from httpx import Client
+from httpx import Client, Response
 
 from ..utils import expect
 from .token_provider import TokenProvider
@@ -17,17 +17,32 @@ class ConcourseSession:
     ):
         self.concourse_url = concourse_url
         self._token_provider = token_provider
-        self._session = None
+        self._client = None
 
     @property
     def is_open(self):
-        return self._session is not None
+        return self._client is not None
 
     @property
-    def connection(self):
-        if self._session is None:
-            self._session = self._login()
-        return self._session
+    def client(self):
+        if self._client is None:
+            self._client = Client()
+            self._update_token(self._client, False)
+        return self._client
+
+    def _make_request(self, make_request: Callable[[Client], Response]) -> Response:
+        client = self.client
+        for _ in range(2):
+            r = make_request(client)
+            if r.status_code == httpx.codes.UNAUTHORIZED:
+                logging.warning(
+                    f"Got {r.status_code} when trying to access {self.concourse_url}"
+                )
+                client.headers.update({"Authorization": ""})
+                self._update_token(client, True)
+            else:
+                return r
+        raise Exception("Could not connect to concourse server")
 
     def _build_url(self, *args) -> str:
         parts = [self.concourse_url]
@@ -40,46 +55,26 @@ class ConcourseSession:
     def _build_pipeline_url(self, team: str, pipeline: str):
         return self._build_teams_url(team, "pipelines", pipeline, "config")
 
-    def _test_token(self, session: Client):
-        teams_url = self._build_teams_url()
-        for i in range(2):
-            r = session.get(teams_url)
-            if r.status_code != httpx.codes.OK:
-                logging.warning(
-                    f"Got {r.status_code} when trying to access {teams_url}"
-                )
-                if i == 1:
-                    raise Exception("Could not connect to concourse server")
-                else:
-                    session.headers.update({"Authorization": ""})
-                    self._update_token(session, True)
-
-    def _update_token(self, session: Client, force_new: bool):
+    def _update_token(self, client: Client, force_new: bool):
         token = self._token_provider.get_token(
-            session, force_new, self.concourse_url
+            client, force_new, self.concourse_url
         )
-        session.headers.update({"Authorization": f"bearer {token}"})
-
-    def _login(self) -> Client:
-        self.close()  # close any connections that might be lingering
-        session = Client()
-        self._update_token(session, False)
-        self._test_token(session)
-        return session
+        client.headers.update({"Authorization": f"bearer {token}"})
 
     def close(self):
-        if self._session is None:
+        if self._client is None:
             return
         try:
-            self._session.close()
+            self._client.close()
         except Exception as e:
             logging.error(e)
         finally:
-            self._session = None
+            self._client = None
 
     def get_pipeline(self, team: str, pipeline: str) -> Tuple[dict, str]:
-        conn = self.connection
-        r = conn.get(self._build_pipeline_url(team, pipeline))
+        r = self._make_request(
+            lambda c: c.get(self._build_pipeline_url(team, pipeline))
+        )
         # https://github.com/concourse/concourse/blob/d55be66cc6b10101a8b4ddd9122e437cb10ccf52/go-concourse/concourse/configs.go#L40
         if r.status_code == 404:
             return ({}, "")
@@ -98,13 +93,14 @@ class ConcourseSession:
         config: dict,
         pipeline_version: str
     ):
-        conn = self.connection
-        # https://github.com/concourse/concourse/blob/d55be66cc6b10101a8b4ddd9122e437cb10ccf52/go-concourse/concourse/configs.go#L76
         headers = {"X-Concourse-Config-Version": pipeline_version}
-        r = conn.put(
-            self._build_pipeline_url(team, pipeline),
-            json=config,
-            headers=headers
+        # https://github.com/concourse/concourse/blob/d55be66cc6b10101a8b4ddd9122e437cb10ccf52/go-concourse/concourse/configs.go#L76
+        r = self._make_request(
+            lambda c: c.put(
+                self._build_pipeline_url(team, pipeline),
+                json=config,
+                headers=headers
+            )
         )
         r.raise_for_status()
 

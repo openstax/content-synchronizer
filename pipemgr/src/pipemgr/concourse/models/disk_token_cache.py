@@ -18,5 +18,5 @@ class DiskTokenCache:
         if not self.location.exists():
             return None
         with open(self.location, "r") as fin:
-            token = fin.readline()
+            token = fin.readline().strip()
         return token
