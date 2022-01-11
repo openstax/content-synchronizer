@@ -1,6 +1,3 @@
-# First-time setup
-Use `poetry install --no-dev` to install dependencies. Alternatively, use the docker image.
-
 # Managing the syncing pipeline
 
 ## Always start by syncing your local osbooks list cleanly with what is on concourse.
@@ -12,6 +9,9 @@ Use `poetry install --no-dev` to install dependencies. Alternatively, use the do
 ```bash
 # Enter the tool's parent directory
 cd pipemgr
+
+# Install dependencies if needed
+poetry install --no-dev
 
 # Sync your local osbooks list with what is on concourse
 poetry run pipemgr extract --clean
@@ -43,7 +43,7 @@ poetry run pipemgr create
 All of the same commands apply; however, `pipemgr` is an installed package on the docker image. Consequently, you do not need to start each command with `poetry run` inside the docker container. 
 
 ## Volumes
-If you want to keep your place, you should mount a volume over `~/.pipemgr`
+If you want to keep your place, you should mount a volume over `/root/.pipemgr`
 
 This will persist your oauth token and your osbooks list
 

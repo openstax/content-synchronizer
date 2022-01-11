@@ -1,14 +1,21 @@
-from typing import Callable, List, Generic, Optional, TypeVar
+from typing import Callable, List, Generic, Optional, Set, TypeVar
 
 
 T = TypeVar("T")
 
 
 class DiffResult(Generic[T]):
-    def __init__(self, added: Optional[List[T]] = None,
-                 removed: Optional[List[T]] = None):
-        self.added: List[T] = added or []
-        self.removed: List[T] = removed or []
+    def __init__(self, before: Set[T], after: Set[T]):
+        self.added: List[T] = []
+        self.removed: List[T] = []
+
+        diff = before ^ after
+
+        for item in diff:
+            if item in after:
+                self.added.append(item)
+            else:
+                self.removed.append(item)
 
     @property
     def empty(self):

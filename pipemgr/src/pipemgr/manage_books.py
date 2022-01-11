@@ -42,23 +42,13 @@ def list_books(args: Args):
 
 
 def get_books_diff(pipeline_a: dict, pipeline_b: dict) -> DiffResult[OSBook]:
-    diff_result: DiffResult[OSBook] = DiffResult()
-
     osbooks_current: Set[OSBook] = set()
     extract_resources(osbooks_current, pipeline_b)
 
     osbooks_new: Set[OSBook] = set()
     extract_resources(osbooks_new, pipeline_a)
 
-    osbooks_xor = osbooks_current ^ osbooks_new
-
-    for book in osbooks_xor:
-        if book in osbooks_new:
-            diff_result.added.append(book)
-        else:
-            diff_result.removed.append(book)
-
-    return diff_result
+    return DiffResult(osbooks_current, osbooks_new)
 
 
 def diff_books(args: Args):
