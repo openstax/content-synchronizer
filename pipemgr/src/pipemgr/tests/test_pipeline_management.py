@@ -2,36 +2,35 @@ import shutil
 import unittest
 from typing import List, Union
 from pathlib import Path
-import sys
 
-# Setup the correct module import path
-WORKING_ROOT = Path(__file__).resolve().parent
-MODULE_ROOT = WORKING_ROOT.parent
-sys.path.append(
-    str(MODULE_ROOT)
-)
-
-import src
-src.OUTPUT_ROOT = WORKING_ROOT/"out"/"test"
-if not src.OUTPUT_ROOT.exists():
-    src.OUTPUT_ROOT.mkdir(parents=True)
-else:
-    # Start each test fresh
-    shutil.rmtree(src.OUTPUT_ROOT)
-    src.OUTPUT_ROOT.mkdir(parents=True)
-
-from src import create_pipeline, manage_books, osbook_utils, extract_resources
-from src.models import Args
-from src.utils import read_yml
-
+import pipemgr
 from pydantic import BaseModel
+from pipemgr.concourse.utils import expect
+from pipemgr.models import Args, OSBook
+from pipemgr.utils import read_yml
 
-PIPELINE = src.OUTPUT_ROOT/"pipeline.yml"
+
+def setup_imports():
+    global create_pipeline, manage_books, osbook_utils, extract_resources
+
+    pipemgr.OUTPUT_ROOT = Path(__file__).parent/"out"
+    if pipemgr.OUTPUT_ROOT.exists():
+        # Start each test fresh
+        shutil.rmtree(pipemgr.OUTPUT_ROOT)
+    pipemgr.OUTPUT_ROOT.mkdir(parents=True)
+
+    from pipemgr import create_pipeline, manage_books, osbook_utils, \
+        extract_resources
+
+
+setup_imports()
+
+PIPELINE_PATH = pipemgr.OUTPUT_ROOT/"pipeline.yml"
 
 # Test the CLI and the underlying functionality at the same time.
 MNG_BOOK1 = Args(
     None,
-    PIPELINE,
+    PIPELINE_PATH,
     False,
     "TEST",
     "example.com",
@@ -48,7 +47,7 @@ MNG_BOOK2 = Args(
 )
 
 EXTRACT_RES = Args(
-    PIPELINE,
+    PIPELINE_PATH,
     None,
     False,
     None,
@@ -56,7 +55,7 @@ EXTRACT_RES = Args(
     False
 )
 
-MY_BOOK = osbook_utils.OSBook(MNG_BOOK1.book, MNG_BOOK1.server)
+MY_BOOK = OSBook(expect(MNG_BOOK1.book, "Expected book repo"), MNG_BOOK1.server)
 books_added = 0
 
 
@@ -118,7 +117,7 @@ class TestAddJob(unittest.TestCase):
 
     def test_c_create_pipeline(self):
         create_pipeline.main(MNG_BOOK1)
-        self.assertTrue(PIPELINE.exists())
+        self.assertTrue(PIPELINE_PATH.exists())
 
     def test_d_book_extract(self):
         osbook_utils.OSBOOKS_FILE.rename(
@@ -139,8 +138,19 @@ class TestAddJob(unittest.TestCase):
 
     def test_f_pipeline_valid_yaml(self):
         try:
-            PipelineValidator(**read_yml(PIPELINE))
+            PipelineValidator(**read_yml(PIPELINE_PATH))
         except FileNotFoundError:
             self.fail("Pipeline was not created")
-        except:
+        except Exception:
             self.fail("Pipeline was not valid yaml")
+
+    def test_g_book_no_diff(self):
+        pipeline_a = read_yml(PIPELINE_PATH)
+        pipeline_b = read_yml(PIPELINE_PATH)
+        self.assertEqual(manage_books.get_books_diff(pipeline_a, pipeline_b).empty, True)
+
+    def test_h_book_with_diff(self):
+        pipeline_a = read_yml(PIPELINE_PATH)
+        pipeline_b = read_yml(PIPELINE_PATH)
+        pipeline_b["resources"] = []
+        self.assertEqual(manage_books.get_books_diff(pipeline_a, pipeline_b).empty, False)
