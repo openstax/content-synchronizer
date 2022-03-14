@@ -130,9 +130,9 @@ if [[ $GITHUB_CREATE_REPO = True && -n "$GITHUB_USER" && ! -z "$GITHUB_PASSWORD"
   public_key=$(cat $key_path'.pub')
   git init
   git config --local user.email $GITHUB_EMAIL
-  git config --local user.name "Book Repository Sync"
+  git config --local user.name "Migration Sync Script"
   git add .
-  git commit -m "First Sync of $REPO_NAME from $SERVER"
+  git commit -m "Initial Commit: $REPO_NAME from $SERVER"
   git branch -M main
   curl -u $GITHUB_USER:$GITHUB_PASSWORD https://api.github.com/user/keys -d "{\"title\":\"$REPO_NAME-key\", \"key\":\"$public_key\"}"
   repo_creation_output=$(curl -u $GITHUB_USER:$GITHUB_PASSWORD https://api.github.com/user/repos -d '{"name":"'$REPO_NAME'"}')
