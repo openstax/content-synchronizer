@@ -19,6 +19,9 @@ help() {
   echo "p     Github password or token"
   echo "e     Github email"
   echo "r     Github Repository name"
+  echo "o     Github OpenStax Parent Repository"
+  echo "k     OpenStax Github Token"
+  echo "l     OpenStax Github username"
   echo
 }
 
@@ -26,7 +29,7 @@ help() {
 # Main program                                             #
 ############################################################
 # Get options
-while getopts ":hcdve:p:u:r:" option; do
+while getopts ":hcdve:p:u:r:o:k:l:" option; do
   case "${option}" in
   c) #Create Github repo
     GITHUB_CREATE_REPO=True ;;
@@ -43,6 +46,12 @@ while getopts ":hcdve:p:u:r:" option; do
     GITHUB_PASSWORD=${OPTARG} ;;
   r) #Repository name
     REPO_NAME=${OPTARG};;
+  o) #Openstax Github Book Parent Repository
+    PARENT_REPO_NAME=${OPTARG};;
+  k) #Openstax Github Username
+    OPENSTAX_GITHUB_USERNAME=${OPTARG};;
+  l) #Openstax Github Book Parent Repository
+    OPENSTAX_GITHUB_TOKEN=${OPTARG};;
   u) #Github user
     GITHUB_USER=${OPTARG} ;;
   v) #display version of script and neb
@@ -59,6 +68,9 @@ done
 shift $((OPTIND - 1))
 
 set -xeo pipefail
+
+
+
 # Upgrade from ./archive-syncfile to META-INF/books.xml
 if [[ ! -f ./META-INF/books.xml ]]; then
   [[ -d ./META-INF/ ]] || mkdir ./META-INF/
@@ -116,6 +128,7 @@ find modules/. -name metadata.json | xargs rm
 rm -rf ./metadata module-ids ./canonical-modules ./archive-syncfile
 
 if [[ $GITHUB_CREATE_REPO = True && -n "$GITHUB_USER" && ! -z "$GITHUB_PASSWORD" && ! -z "$GITHUB_EMAIL"  && ! -z "$REPO_NAME" ]]; then
+
   echo "Creating Github Repository"
   eval $(ssh-agent -s)
   if [ ! -e "$HOME/.ssh/known_hosts" ]; then
@@ -128,20 +141,37 @@ if [[ $GITHUB_CREATE_REPO = True && -n "$GITHUB_USER" && ! -z "$GITHUB_PASSWORD"
   cat "key_pass_file" | SSH_ASKPASS=/bin/cat setsid -w ssh-add "$key_path"
   rm ./key_pass_file
   public_key=$(cat $key_path'.pub')
-  git init
-  git config --local user.email $GITHUB_EMAIL
-  git config --local user.name "Migration Sync Script"
-  git add .
-  git commit -m "Initial Commit: $REPO_NAME from $SERVER"
-  git branch -M main
+
   curl -u $GITHUB_USER:$GITHUB_PASSWORD https://api.github.com/user/keys -d "{\"title\":\"$REPO_NAME-key\", \"key\":\"$public_key\"}"
   repo_creation_output=$(curl -u $GITHUB_USER:$GITHUB_PASSWORD https://api.github.com/user/repos -d '{"name":"'$REPO_NAME'"}')
   git_url=$(echo $repo_creation_output | jq -r '.ssh_url')
-  if [[ ! -z "$git_url" ]]; then
-    echo "Repository URL: $git_url"
-    git remote add origin "$git_url"
-    git push -u origin main
+
+  echo "Repository URL: $git_url"
+  #Clone the Parent Github repository if necessary
+    if [[ ! -z "$PARENT_REPO_NAME" && ! -z "$OPENSTAX_GITHUB_USERNAME" && ! -z "$OPENSTAX_GITHUB_TOKEN" ]]; then
+      curr_dir=${PWD##*/}
+      git clone "https://$OPENSTAX_GITHUB_USERNAME:$OPENSTAX_GITHUB_TOKEN@github.com/openstax/$PARENT_REPO_NAME.git" ../$PARENT_REPO_NAME
+      cd ../$PARENT_REPO_NAME
+      git config --local user.email $GITHUB_EMAIL
+      git config --local user.name "Migration Sync Script"
+      git remote set-url origin $git_url
+      git checkout -b "derived-branch"
+      rm -rf *
+      cp -R ../$curr_dir/* .
+      git add .
+      git commit -m "Initial Commit $REPO_NAME"
+    else
+      git init
+      git config --local user.email $GITHUB_EMAIL
+      git config --local user.name "Migration Sync Script"
+      git add .
+      git commit -m "Initial Commit: $REPO_NAME from $SERVER"
+      git branch -M main
+      git remote add origin "$git_url"
+    fi
+
+    git push --all origin
     echo "Github Repository Created!"
-  fi
+
 fi
 echo 'Done.'
