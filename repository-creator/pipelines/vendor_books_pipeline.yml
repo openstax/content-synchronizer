@@ -1,0 +1,85 @@
+---
+var_sources:
+  - name: github
+    type: dummy
+    config:
+      vars:
+        username:
+        token:
+        email:
+        openstax:
+          username:
+          token:
+
+docker-credentials: &docker-credentials
+  username:
+  password:
+
+resource_types:
+  - name: queue-checker
+    type: registry-image
+    source:
+      repository: golfpapagolf/queue-checker
+
+resources:
+  - name: queue
+    type: queue-checker
+    check_every: 1m
+    source:
+      uri: https://gist.githubusercontent.com/optimussam/4280485d3a3cb6aad21566f62d265e5a/raw/1108e7895fd05eadff22fc1debbd880b499e77f0/vendor_books.json
+
+  - name: content-synchronizer
+    type: git
+    source:
+      uri: https://github.com/openstax/content-synchronizer
+      branch: main
+
+jobs:
+  - name: sync-a-book
+    public: true
+    max_in_flight: 2
+    plan:
+      - in_parallel:
+        - get: queue
+          trigger: true
+          version: every
+        - get: content-synchronizer
+      - task: sync-content
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: python
+              tag: 3.7-slim
+              <<: *docker-credentials
+
+          inputs:
+            - name: queue
+            - name: content-synchronizer
+          run:
+            path: /bin/bash
+            args:
+              - -c
+              - |
+                set -e
+                item="$(cat queue/item)"
+                [[ ! "$item" ]] && exit 1
+                apt-get update
+                apt-get install -y build-essential libxml2-dev libxslt-dev python-dev xmlstarlet jq git ssh openssh-client curl 
+                python --version
+                python -m pip --version
+                python -m pip install --upgrade wheel pip setuptools
+                CFLAGS="-O0" python -m pip install nebuchadnezzar lxml
+                python -m pip install nebuchadnezzar
+                collection_id=`echo $item | jq -r '.collection_id'`
+                slug=`echo $item | jq -r '.slug'`
+                name=`echo $item | jq -r '.name'`
+                repo_name=`echo $item | jq -r '.repository_name'`
+                ROOT_DIR=`pwd`
+                mkdir -p tmp
+                mkdir -p /root/.ssh
+                cd tmp
+                echo "$slug $collection_id" > ./archive-syncfile
+                CODE_DIR=$ROOT_DIR/content-synchronizer/resource-synchronizer SERVER=cnx.org ../content-synchronizer/resource-synchronizer/sync.sh -u ((github:username)) -p ((github:token)) -e ((github:email)) -r $repo_name -c
+                exit 0

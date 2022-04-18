@@ -1,0 +1,96 @@
+---
+var_sources:
+  - name: github
+    type: dummy
+    config:
+      vars:
+        username:
+        token:
+        email:
+        openstax:
+          username:
+          token:
+
+docker-credentials: &docker-credentials
+  username:
+  password:
+
+resource_types:
+  - name: queue-checker
+    type: registry-image
+    source:
+      repository: golfpapagolf/queue-checker
+
+resources:
+  - name: queue
+    type: queue-checker
+    check_every: 1m
+    source:
+      uri: https://gist.githubusercontent.com/optimussam/946fc5a064137717aef2fb76ac3565d1/raw/99a4207e89f7362c68ed9abeb1ea1cb2268484ea/openstax_derived_books.json
+
+  - name: content-synchronizer
+    type: git
+    source:
+      uri: https://github.com/openstax/content-synchronizer
+      branch: main
+
+jobs:
+  - name: sync-a-book
+    public: true
+    max_in_flight: 5
+    plan:
+      - in_parallel:
+        - get: queue
+          trigger: true
+          version: every
+        - get: content-synchronizer
+      - task: sync-content
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: python
+              tag: 3.7-slim
+              <<: *docker-credentials
+
+          inputs:
+            - name: queue
+            - name: content-synchronizer
+          run:
+            path: /bin/bash
+            args:
+              - -c
+              - |
+                set -x
+                
+                item="$(cat queue/item)"
+                [[ ! "$item" ]] && exit 1
+                uname -a
+                apt-get update
+                apt-get install -y build-essential libxml2-dev libxslt-dev python-dev xmlstarlet jq git ssh openssh-client curl 
+                
+                python --version
+                python -m pip --version
+                python -m pip install --upgrade wheel pip setuptools
+                CFLAGS="-O0" python -m pip install nebuchadnezzar lxml
+                python -m pip install nebuchadnezzar
+
+                collection_id=`echo $item | jq -r '.collection_id'`
+                slug=`echo $item | jq -r '.slug'`
+                name=`echo $item | jq -r '.name'`
+                echo "Collection: $collection_id"
+                echo "Name: $name"
+                echo "Slug: $slug"
+                ROOT_DIR=`pwd`
+                mkdir -p tmp
+                mkdir -p /root/.ssh
+                echo $PWD
+                ls -alt
+                ls -alt $CODE_DIR
+
+                cd tmp
+                echo "$slug $collection_id" > ./archive-syncfile
+                cat archive-syncfile
+                CODE_DIR=$ROOT_DIR/content-synchronizer/resource-synchronizer SERVER=cnx.org ../content-synchronizer/resource-synchronizer/sync.sh -u ((github:username)) -p ((github:token)) -e ((github:email)) -r $slug -c -k ((github:openstax.username)) -l ((github:openstax.token)) -o osbooks-chemistry-bundle
+                exit 0
