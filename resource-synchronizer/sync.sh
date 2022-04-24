@@ -23,13 +23,16 @@ help() {
   echo "k     OpenStax Github Token"
   echo "l     OpenStax Github username"
   echo
+  echo "Required if the destination repository is part of an organization"
+  echo "q    Destination Github Orhanization"
+  echo
 }
 
 ############################################################
 # Main program                                             #
 ############################################################
 # Get options
-while getopts ":hcdve:p:u:r:o:k:l:" option; do
+while getopts ":hcdve:p:u:r:o:k:l:q:" option; do
   case "${option}" in
   c) #Create Github repo
     GITHUB_CREATE_REPO=True ;;
@@ -54,6 +57,8 @@ while getopts ":hcdve:p:u:r:o:k:l:" option; do
     OPENSTAX_GITHUB_TOKEN=${OPTARG};;
   u) #Github user
     GITHUB_USER=${OPTARG} ;;
+  q) #Destination Organization
+    GITHUB_ORGANIZATION=${OPTARG};;
   v) #display version of script and neb
     neb --version
     exit
@@ -143,7 +148,11 @@ if [[ $GITHUB_CREATE_REPO = True && -n "$GITHUB_USER" && ! -z "$GITHUB_PASSWORD"
   public_key=$(cat $key_path'.pub')
 
   curl -u $GITHUB_USER:$GITHUB_PASSWORD https://api.github.com/user/keys -d "{\"title\":\"$REPO_NAME-key\", \"key\":\"$public_key\"}"
-  repo_creation_output=$(curl -u $GITHUB_USER:$GITHUB_PASSWORD https://api.github.com/user/repos -d '{"name":"'$REPO_NAME'"}')
+  if [[ ! -z "$GITHUB_ORGANIZATION" ]]; then
+      repo_creation_output=$(curl -u $GITHUB_USER:$GITHUB_PASSWORD https://api.github.com/orgs/$GITHUB_ORGANIZATION/repos -d '{"name":"'$REPO_NAME'"}')
+    else
+      repo_creation_output=$(curl -u $GITHUB_USER:$GITHUB_PASSWORD https://api.github.com/user/repos -d '{"name":"'$REPO_NAME'"}')
+  fi
   git_url=$(echo $repo_creation_output | jq -r '.ssh_url')
 
   echo "Repository URL: $git_url"
@@ -151,6 +160,7 @@ if [[ $GITHUB_CREATE_REPO = True && -n "$GITHUB_USER" && ! -z "$GITHUB_PASSWORD"
     if [[ ! -z "$PARENT_REPO_NAME" && ! -z "$OPENSTAX_GITHUB_USERNAME" && ! -z "$OPENSTAX_GITHUB_TOKEN" ]]; then
       curr_dir=${PWD##*/}
       git clone "https://$OPENSTAX_GITHUB_USERNAME:$OPENSTAX_GITHUB_TOKEN@github.com/openstax/$PARENT_REPO_NAME.git" ../$PARENT_REPO_NAME
+      git fetch --all
       cd ../$PARENT_REPO_NAME
       git config --local user.email $GITHUB_EMAIL
       git config --local user.name "Migration Sync Script"
