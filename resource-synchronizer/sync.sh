@@ -160,8 +160,8 @@ if [[ $GITHUB_CREATE_REPO = True && -n "$GITHUB_USER" && ! -z "$GITHUB_PASSWORD"
     if [[ ! -z "$PARENT_REPO_NAME" && ! -z "$OPENSTAX_GITHUB_USERNAME" && ! -z "$OPENSTAX_GITHUB_TOKEN" ]]; then
       curr_dir=${PWD##*/}
       git clone "https://$OPENSTAX_GITHUB_USERNAME:$OPENSTAX_GITHUB_TOKEN@github.com/openstax/$PARENT_REPO_NAME.git" ../$PARENT_REPO_NAME
-      git fetch --all
       cd ../$PARENT_REPO_NAME
+      git fetch --all
       git config --local user.email $GITHUB_EMAIL
       git config --local user.name "Migration Sync Script"
       git remote set-url origin $git_url
