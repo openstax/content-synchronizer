@@ -48,17 +48,17 @@ while getopts ":hcdve:p:u:r:o:k:l:q:" option; do
   p) #Github password or TOKEN
     GITHUB_PASSWORD=${OPTARG} ;;
   r) #Repository name
-    REPO_NAME=${OPTARG};;
+    REPO_NAME=${OPTARG} ;;
   o) #Openstax Github Book Parent Repository
-    PARENT_REPO_NAME=${OPTARG};;
+    PARENT_REPO_NAME=${OPTARG} ;;
   k) #Openstax Github Username
-    OPENSTAX_GITHUB_USERNAME=${OPTARG};;
+    OPENSTAX_GITHUB_USERNAME=${OPTARG} ;;
   l) #Openstax Github Book Parent Repository
-    OPENSTAX_GITHUB_TOKEN=${OPTARG};;
+    OPENSTAX_GITHUB_TOKEN=${OPTARG} ;;
   u) #Github user
     GITHUB_USER=${OPTARG} ;;
   q) #Destination Organization
-    GITHUB_ORGANIZATION=${OPTARG};;
+    GITHUB_ORGANIZATION=${OPTARG} ;;
   v) #display version of script and neb
     neb --version
     exit
@@ -73,8 +73,6 @@ done
 shift $((OPTIND - 1))
 
 set -xeo pipefail
-
-
 
 # Upgrade from ./archive-syncfile to META-INF/books.xml
 if [[ ! -f ./META-INF/books.xml ]]; then
@@ -132,7 +130,7 @@ python $CODE_DIR/poet_ready.py $CODE_DIR
 find modules/. -name metadata.json | xargs rm
 rm -rf ./metadata module-ids ./canonical-modules ./archive-syncfile
 
-if [[ $GITHUB_CREATE_REPO = True && -n "$GITHUB_USER" && ! -z "$GITHUB_PASSWORD" && ! -z "$GITHUB_EMAIL"  && ! -z "$REPO_NAME" ]]; then
+if [[ $GITHUB_CREATE_REPO = True && -n "$GITHUB_USER" && ! -z "$GITHUB_PASSWORD" && ! -z "$GITHUB_EMAIL" && ! -z "$REPO_NAME" ]]; then
 
   echo "Creating Github Repository"
   eval $(ssh-agent -s)
@@ -149,41 +147,42 @@ if [[ $GITHUB_CREATE_REPO = True && -n "$GITHUB_USER" && ! -z "$GITHUB_PASSWORD"
 
   curl -u $GITHUB_USER:$GITHUB_PASSWORD https://api.github.com/user/keys -d "{\"title\":\"$REPO_NAME-key\", \"key\":\"$public_key\"}"
   if [[ ! -z "$GITHUB_ORGANIZATION" ]]; then
-      repo_creation_output=$(curl -u $GITHUB_USER:$GITHUB_PASSWORD https://api.github.com/orgs/$GITHUB_ORGANIZATION/repos -d '{"name":"'$REPO_NAME'"}')
-    else
-      repo_creation_output=$(curl -u $GITHUB_USER:$GITHUB_PASSWORD https://api.github.com/user/repos -d '{"name":"'$REPO_NAME'"}')
+    repo_creation_output=$(curl -u $GITHUB_USER:$GITHUB_PASSWORD https://api.github.com/orgs/$GITHUB_ORGANIZATION/repos -d '{"name":"'$REPO_NAME'"}')
+  else
+    repo_creation_output=$(curl -u $GITHUB_USER:$GITHUB_PASSWORD https://api.github.com/user/repos -d '{"name":"'$REPO_NAME'"}')
   fi
   git_url=$(echo $repo_creation_output | jq -r '.ssh_url')
+  if [[ "$git_url" == null || "$git_url" == "null" ]]; then exit 1; fi
 
   echo "Repository URL: $git_url"
   #Clone the Parent Github repository if necessary
-    if [[ ! -z "$PARENT_REPO_NAME" && ! -z "$OPENSTAX_GITHUB_USERNAME" && ! -z "$OPENSTAX_GITHUB_TOKEN" ]]; then
-      curr_dir=${PWD##*/}
-      git clone "https://$OPENSTAX_GITHUB_USERNAME:$OPENSTAX_GITHUB_TOKEN@github.com/openstax/$PARENT_REPO_NAME.git" ../$PARENT_REPO_NAME
-      cd ../$PARENT_REPO_NAME
-      main_branch=$(git branch | sed -n -e 's/^\* \(.*\)/\1/p')
-      for i in $(git branch -a |grep 'remotes' | awk -F/ '{print $3}' | grep -v 'HEAD ->'); do git checkout $i; done;
-      git checkout $main_branch
-      git config --local user.email $GITHUB_EMAIL
-      git config --local user.name "Migration Sync Script"
-      git remote set-url origin $git_url
-      git checkout -b "derived-branch"
-      rm -rf *
-      cp -R ../$curr_dir/* .
-      git add .
-      git commit -m "Initial Commit $REPO_NAME"
-    else
-      git init
-      git config --local user.email $GITHUB_EMAIL
-      git config --local user.name "Migration Sync Script"
-      git add .
-      git commit -m "Initial Commit: $REPO_NAME from $SERVER"
-      git branch -M main
-      git remote add origin "$git_url"
-    fi
+  if [[ ! -z "$PARENT_REPO_NAME" && ! -z "$OPENSTAX_GITHUB_USERNAME" && ! -z "$OPENSTAX_GITHUB_TOKEN" ]]; then
+    curr_dir=${PWD##*/}
+    git clone "https://$OPENSTAX_GITHUB_USERNAME:$OPENSTAX_GITHUB_TOKEN@github.com/openstax/$PARENT_REPO_NAME.git" ../$PARENT_REPO_NAME
+    cd ../$PARENT_REPO_NAME
+    main_branch=$(git branch | sed -n -e 's/^\* \(.*\)/\1/p')
+    for i in $(git branch -a | grep 'remotes' | awk -F/ '{print $3}' | grep -v 'HEAD ->'); do git checkout $i; done
+    git checkout $main_branch
+    git config --local user.email $GITHUB_EMAIL
+    git config --local user.name "Migration Sync Script"
+    git remote set-url origin $git_url
+    git checkout -b "derived-branch"
+    rm -rf *
+    cp -R ../$curr_dir/* .
+    git add .
+    git commit -m "Initial Commit $REPO_NAME"
+  else
+    git init
+    git config --local user.email $GITHUB_EMAIL
+    git config --local user.name "Migration Sync Script"
+    git add .
+    git commit -m "Initial Commit: $REPO_NAME from $SERVER"
+    git branch -M main
+    git remote add origin "$git_url"
+  fi
 
-    git push --all origin
-    echo "Github Repository Created!"
+  git push --all origin
+  echo "Github Repository Created!"
 
 fi
 echo 'Done.'

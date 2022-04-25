@@ -7,13 +7,24 @@ var_sources:
         username:
         token:
         email:
+        organization:
         openstax:
           username:
           token:
 
 docker-credentials: &docker-credentials
-  username:
-  password:
+  username: ((ce-dockerhub-id))
+  password: ((ce-dockerhub-token))
+
+status-notifications: &status-notifications
+  on_success:
+    put: notify
+    params:
+      alert_type: success
+  on_failure:
+    put: notify
+    params:
+      alert_type: failed
 
 resource_types:
   - name: queue-checker
@@ -34,8 +45,15 @@ resources:
       uri: https://github.com/openstax/content-synchronizer
       branch: main
 
+  - name: notify
+    type: slack-notifier
+    icon: slack
+    source:
+      url: ((slack-webhook-cestream))
+
 jobs:
   - name: sync-a-book
+    <<: *status-notifications
     public: true
     max_in_flight: 5
     plan:
