@@ -31,6 +31,12 @@ resource_types:
     type: registry-image
     source:
       repository: golfpapagolf/queue-checker
+  - name: slack-notifier
+    type: registry-image
+    # Switch back to mockersf/concourse-slack-notifier once
+    # https://github.com/mockersf/concourse-slack-notifier/pull/86 is merged
+    source:
+      repository: aoldershaw/concourse-slack-notifier
 
 resources:
   - name: queue
@@ -68,8 +74,8 @@ jobs:
           image_resource:
             type: docker-image
             source:
-              repository: python
-              tag: 3.7-slim
+              repository: samuelklutse/openstax-cnx-migration
+              tag: latest
               <<: *docker-credentials
 
           inputs:
@@ -84,29 +90,12 @@ jobs:
                 
                 item="$(cat queue/item)"
                 [[ ! "$item" ]] && exit 1
-                uname -a
-                apt-get update
-                apt-get install -y build-essential libxml2-dev libxslt-dev python-dev xmlstarlet jq git ssh openssh-client curl 
-                
-                python --version
-                python -m pip --version
-                python -m pip install --upgrade wheel pip setuptools
-                CFLAGS="-O0" python -m pip install nebuchadnezzar lxml
-                python -m pip install nebuchadnezzar
-
                 collection_id=`echo $item | jq -r '.collection_id'`
                 slug=`echo $item | jq -r '.slug'`
                 name=`echo $item | jq -r '.name'`
-                echo "Collection: $collection_id"
-                echo "Name: $name"
-                echo "Slug: $slug"
                 ROOT_DIR=`pwd`
                 mkdir -p tmp
                 mkdir -p /root/.ssh
-                echo $PWD
-                ls -alt
-                ls -alt $CODE_DIR
-
                 cd tmp
                 echo "$slug $collection_id" > ./archive-syncfile
                 cat archive-syncfile

@@ -31,6 +31,12 @@ resource_types:
     type: registry-image
     source:
       repository: golfpapagolf/queue-checker
+  - name: slack-notifier
+    type: registry-image
+    # Switch back to mockersf/concourse-slack-notifier once
+    # https://github.com/mockersf/concourse-slack-notifier/pull/86 is merged
+    source:
+      repository: aoldershaw/concourse-slack-notifier
 
 resources:
   - name: queue
@@ -68,8 +74,8 @@ jobs:
           image_resource:
             type: docker-image
             source:
-              repository: python
-              tag: 3.7-slim
+              repository: samuelklutse/openstax-cnx-migration
+              tag: latest
               <<: *docker-credentials
 
           inputs:
@@ -81,46 +87,21 @@ jobs:
               - -c
               - |
                 set -x
-                
                 item="$(cat queue/item)"
-                
                 [[ ! "$item" ]] && exit 1
-                
-                
-                uname -a
-                apt-get update
-                apt-get install -y build-essential libxml2-dev libxslt-dev python-dev xmlstarlet jq git ssh openssh-client curl 
-                
-                
                 collection_id=`echo $item | jq -r '.collection_id'`
                 slug=`echo $item | jq -r '.slug'`
                 name=`echo $item | jq -r '.name'`
                 migrate=`echo $item | jq -r '.migrate'`
                 parent_repository_name=`echo $item | jq -r '.parent_repository_name'`
                 repository_name=`echo $item | jq -r '.repository_name'`
-                
                 if [ "$migrate" = false ] ; then 
                   echo "$slug cannot be migrated"
                   exit 1
                 fi
-                
-                
-                python --version
-                python -m pip --version
-                python -m pip install --upgrade wheel pip setuptools
-                CFLAGS="-O0" python -m pip install nebuchadnezzar lxml
-                python -m pip install nebuchadnezzar
-                
-                
                 ROOT_DIR=`pwd`
                 mkdir -p tmp
                 mkdir -p /root/.ssh
-                echo $PWD
-                ls -alt
-                ls -alt $CODE_DIR
-
                 cd tmp
-                echo "$slug $collection_id" > ./archive-syncfile
-                cat archive-syncfile
-                CODE_DIR=$ROOT_DIR/content-synchronizer/resource-synchronizer SERVER=cnx.org ../content-synchronizer/resource-synchronizer/sync.sh -u ((github:username)) -p ((github:token)) -e ((github:email)) -r $repository_name -c -k ((github:openstax.username)) -l ((github:openstax.token)) -o $parent_repository_name
+                CODE_DIR=$ROOT_DIR/content-synchronizer/resource-synchronizer SERVER=cnx.org ../content-synchronizer/resource-synchronizer/sync.sh -u ((github:username)) -p ((github:token)) -e ((github:email)) -r $repository_name -c -k ((github:openstax.username)) -l ((github:openstax.token)) -o $parent_repository_name -q ((github:organization))
                 exit 0
