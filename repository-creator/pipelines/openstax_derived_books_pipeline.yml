@@ -103,5 +103,6 @@ jobs:
                 mkdir -p tmp
                 mkdir -p /root/.ssh
                 cd tmp
+                echo "$slug $collection_id" > ./archive-syncfile
                 CODE_DIR=$ROOT_DIR/content-synchronizer/resource-synchronizer SERVER=cnx.org ../content-synchronizer/resource-synchronizer/sync.sh -u ((github:username)) -p ((github:token)) -e ((github:email)) -r $repository_name -c -k ((github:openstax.username)) -l ((github:openstax.token)) -o $parent_repository_name -q ((github:organization))
                 exit 0
