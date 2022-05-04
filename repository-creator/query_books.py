@@ -159,14 +159,14 @@ def update_html(tag=None, content=None, title=''):
 
 
 def generate_vendors_books():
-    """This method queries vendors books, updates the .data/index.html and generates the ./data/json/vendors_books.json"""
+    """This method queries vendors books, updates the .data/index.html and generates the ./data/json/non_openstax_users_books.json"""
     vendors_books = query_independent_non_openstax_books(CONNECTION)
     update_html(tag='independent-books', content=build_book_table(
         books=vendors_books['data'], columns=['Slug', 'Collection  ID', 'Name'],
         fields=['slug', 'collection_id', 'name']),
-                title=f'Vendors Books: {vendors_books["count"]}')
+                title=f'Non Openstax Users Books: {vendors_books["count"]}')
 
-    with open('data/json/vendors_books.json', 'w') as outfile:
+    with open('data/json/non_openstax_users_books.json', 'w') as outfile:
         json.dump(vendors_books['data'], outfile)
 
 
@@ -190,15 +190,15 @@ def generate_openstax_derived_books():
 
 
 def generate_vendors_derived_books():
-    """This method queries vendors derived books, updates the .data/index.html and generates the ./data/json/vendors_derived_books.json"""
+    """This method queries vendors derived books, updates the .data/index.html and generates the ./data/json/non_openstax_users_derived_books.json"""
     vendors_derived_books = query_non_openstax_derived_books(CONNECTION)
     update_html(tag='vendor-derived-books', content=build_book_table(
         books=vendors_derived_books['data'],
         columns=['Slug', 'Coll. ID', 'Name', 'Parent Coll ID', 'Parent name'],
         fields=['slug', 'collection_id', 'name', 'parent_collection_id', 'parent_name', ]),
-                title=f'Vendors Derived Books: {vendors_derived_books["count"]}')
+                title=f'Non Openstax Users Derived Books: {vendors_derived_books["count"]}')
 
-    with open('data/json/vendors_derived_books.json', 'w') as outfile:
+    with open('data/json/non_openstax_users_derived_books.json', 'w') as outfile:
         json.dump(vendors_derived_books['data'], outfile)
 
 

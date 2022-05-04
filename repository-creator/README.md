@@ -29,13 +29,13 @@ There are 3 different pipelines that vary based on the type of books we want to 
 ###[OpenStax Derived Books](./pipelines/openstax_derived_books_pipeline.yml)
 This  pipeline takes the raw URL of the [openstax_derived_books.json](./data/json/openstax_derived_books.json), queues out the items in the json and pass them as input to the [sync script](../resource-synchronizer/sync.sh) for the migration.
 
-###[Vendors Books](./pipelines/vendor_books_pipeline.yml)
-This  pipeline takes the raw URL of the [vendors_books.json](./data/json/vendors_books.json), queues out the items in the json and pass them as input to the [sync script](../resource-synchronizer/sync.sh) for the migration.
+###[Non Openstax Users Books](./pipelines/non_openstax_users_books_pipeline.yml)
+This  pipeline takes the raw URL of the [non_openstax_users_books.json](./data/json/non_openstax_users_books.json), queues out the items in the json and pass them as input to the [sync script](../resource-synchronizer/sync.sh) for the migration.
 
-###[Vendors Derived Books](./pipelines/vendor_derived_books_pipeline.yml)
-This  pipeline takes the raw URL of the [vendors_derived_books.json](./data/json/vendors_derived_books.json), queues out the items in the json and pass them as input to the [sync script](../resource-synchronizer/sync.sh) for the migration.
+###[Non Openstax Users Derived Books](./pipelines/non_openstax_users_derived_books_pipeline.yml)
+This  pipeline takes the raw URL of the [non_openstax_users_derived_books.json](./data/json/non_openstax_users_derived_books.json), queues out the items in the json and pass them as input to the [sync script](../resource-synchronizer/sync.sh) for the migration.
 
 
 ###TODO
-- [ ] Update Sync Script to push all branches to new repository
+- [] Update Sync Script to push all branches to new repository
 - [ ] Return a Slack Message when a pipeline job fails or succeeds.
