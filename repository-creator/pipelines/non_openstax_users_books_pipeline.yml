@@ -5,12 +5,12 @@ var_sources:
     config:
       vars:
         username: staxly
-        token: ((github-private-key))
+        token: ((github-api-token))
         email: staxly@openstax.org
         organization: cnx-user-books
         openstax:
           username: staxly
-          token: ((github-private-key))
+          token: ((github-api-token))
 
 docker-credentials: &docker-credentials
   username: ((ce-dockerhub-id))
