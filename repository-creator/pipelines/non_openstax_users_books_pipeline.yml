@@ -4,13 +4,13 @@ var_sources:
     type: dummy
     config:
       vars:
-        username:
-        token:
-        email:
-        organization:
+        username: staxly
+        token: ((github-private-key))
+        email: staxly@openstax.org
+        organization: cnx-user-books
         openstax:
-          username:
-          token:
+          username: staxly
+          token: ((github-private-key))
 
 docker-credentials: &docker-credentials
   username: ((ce-dockerhub-id))
@@ -43,7 +43,7 @@ resources:
     type: queue-checker
     check_every: 1m
     source:
-      uri: https://gist.githubusercontent.com/optimussam/4280485d3a3cb6aad21566f62d265e5a/raw/0338d6e142536ebc513943cd57ccc691686d579e/vendor_books.json
+      uri: https://raw.githubusercontent.com/openstax/content-synchronizer/sk-ce-1790/repository-creator/data/json/non_openstax_users_books.json
 
   - name: content-synchronizer
     type: git
@@ -98,5 +98,6 @@ jobs:
                 mkdir -p /root/.ssh
                 cd tmp
                 echo "$slug $collection_id" > ./archive-syncfile
+                echo "CODE_DIR=$ROOT_DIR/content-synchronizer/resource-synchronizer SERVER=cnx.org ../content-synchronizer/resource-synchronizer/sync.sh -u ((github:username)) -p ((github:token)) -e ((github:email)) -r $repo_name -q ((github:organization)) -c"
                 CODE_DIR=$ROOT_DIR/content-synchronizer/resource-synchronizer SERVER=cnx.org ../content-synchronizer/resource-synchronizer/sync.sh -u ((github:username)) -p ((github:token)) -e ((github:email)) -r $repo_name -q ((github:organization)) -c
                 exit 0
