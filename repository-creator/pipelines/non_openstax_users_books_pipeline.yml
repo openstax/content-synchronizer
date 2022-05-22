@@ -89,6 +89,22 @@ jobs:
                 set -e
                 item="$(cat queue/item)"
                 [[ ! "$item" ]] && exit 1
+                
+                #Check Github rates limit
+                curl -u '((github:username)):((github:token))' -I https://api.github.com/users/octocat >> stats
+                cat stats
+                remaining_calls=$(cat stats | grep "x-ratelimit-remaining"  | tr -d '\r' |  awk '{print $2}')
+                reset_time=$(cat stats | grep "x-ratelimit-reset"  | tr -d '\r' |  awk '{print $2}')
+                
+                echo $reset_time
+                current_epoch=$(awk 'BEGIN {srand(); print srand()}')
+                sleep_time=$(($reset_time-$current_epoch))
+                echo "$remaining_calls Remaining Calls resetting in $sleep_time seconds."
+                if [[ "remaing_calls" -gt 9 ]] ; then
+                  echo "Sleeping... See you in $sleep_time seconds"
+                  sleep $sleep_time; 
+                fi
+      
                 collection_id=`echo $item | jq -r '.collection_id'`
                 slug=`echo $item | jq -r '.slug'`
                 name=`echo $item | jq -r '.name'`
