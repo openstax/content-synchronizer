@@ -85,9 +85,7 @@ if [[ $GITHUB_CREATE_REPO = True && -n "$GITHUB_USER" && ! -z "$GITHUB_PASSWORD"
     repo_container_url="https://api.github.com/orgs/user/repos"
   fi
   repo_exists=$(curl -u $GITHUB_USER:$GITHUB_PASSWORD "https://api.github.com/repos/$GITHUB_ORGANIZATION/$REPO_NAME" | jq -r '.message')
-  if [[ "$repo_exists" == 'Not Found' ]]; then
-    repo_creation_output=$(curl -u $GITHUB_USER:$GITHUB_PASSWORD $repo_container_url -d '{"name":"'$REPO_NAME'"}')
-  else
+  if [[ "$repo_exists" != 'Not Found' ]]; then
     echo "Repository already exists!"
     exit 1
   fi
@@ -163,6 +161,8 @@ rm -rf ./metadata module-ids ./canonical-modules ./archive-syncfile
 if [[ $GITHUB_CREATE_REPO = True && -n "$GITHUB_USER" && ! -z "$GITHUB_PASSWORD" && ! -z "$GITHUB_EMAIL" && ! -z "$REPO_NAME" ]]; then
 
   echo "Creating Github Repository"
+
+  repo_creation_output=$(curl -u $GITHUB_USER:$GITHUB_PASSWORD $repo_container_url -d '{"name":"'$REPO_NAME'"}')
 
   git_url=$(echo $repo_creation_output | jq -r '.ssh_url')
   if [[ "$git_url" == null || "$git_url" == "null" ]]; then exit 1; fi
