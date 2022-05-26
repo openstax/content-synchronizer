@@ -109,6 +109,17 @@ while read slug collid; do
   find "./$slug/" -maxdepth 1 -mindepth 1 -type d | xargs -I{} basename {} >>module-ids
 done <./archive-syncfile
 
+# Exit if content in collection.xml is empty
+while read slug collid; do
+  sed -i -e  "s/\\\\012//g" "$slug/collection.xml"
+  content=$(xmlstarlet sel -t -v "/col:collection/col:content" $slug/collection.xml | sed 's/ *$//g')
+  if [[ ! "$content" ]];then
+    echo "No content found for $slug"
+    exit 1
+  fi
+done <./archive-syncfile
+
+
 python $CODE_DIR/find-module-canonical.py >canonical-modules
 rm -rf modules collections metadata media
 mkdir modules collections metadata media
@@ -137,20 +148,22 @@ if [[ $GITHUB_CREATE_REPO = True && -n "$GITHUB_USER" && ! -z "$GITHUB_PASSWORD"
   if [ ! -e "$HOME/.ssh/known_hosts" ]; then
     touch "$HOME/.ssh/known_hosts"
   fi
-  ssh-keygen -F github.com || ssh-keyscan "github.com" >>"$HOME/.ssh/known_hosts"
-  key_path=$(echo $HOME'/.ssh/'$REPO_NAME'_rsa')
-  ssh-keygen -t rsa -b 4096 -C "$GITHUB_EMAIL" -N "$GITHUB_PASSWORD" -f "$key_path"
-  echo $GITHUB_PASSWORD >"key_pass_file"
-  cat "key_pass_file" | SSH_ASKPASS=/bin/cat setsid -w ssh-add "$key_path"
-  rm ./key_pass_file
-  public_key=$(cat $key_path'.pub')
 
-  curl -u $GITHUB_USER:$GITHUB_PASSWORD https://api.github.com/user/keys -d "{\"title\":\"$REPO_NAME-key\", \"key\":\"$public_key\"}"
+
   if [[ ! -z "$GITHUB_ORGANIZATION" ]]; then
-    repo_creation_output=$(curl -u $GITHUB_USER:$GITHUB_PASSWORD https://api.github.com/orgs/$GITHUB_ORGANIZATION/repos -d '{"name":"'$REPO_NAME'"}')
+    #Check if repository exists.
+    repo_container_url="https://api.github.com/orgs/$GITHUB_ORGANIZATION/repos"
   else
-    repo_creation_output=$(curl -u $GITHUB_USER:$GITHUB_PASSWORD https://api.github.com/user/repos -d '{"name":"'$REPO_NAME'"}')
+    repo_container_url="https://api.github.com/orgs/user/repos"
   fi
+  repo_exists=$(curl -u $GITHUB_USER:$GITHUB_PASSWORD "https://api.github.com/repos/$GITHUB_ORGANIZATION/$REPO_NAME" | jq -r '.message')
+  if [[ "$repo_exists" == 'Not Found' ]]; then
+    repo_creation_output=$(curl -u $GITHUB_USER:$GITHUB_PASSWORD $repo_container_url -d '{"name":"'$REPO_NAME'"}')
+  else
+    echo "Repository already exists!"
+    exit 1
+  fi
+
   git_url=$(echo $repo_creation_output | jq -r '.ssh_url')
   if [[ "$git_url" == null || "$git_url" == "null" ]]; then exit 1; fi
 
