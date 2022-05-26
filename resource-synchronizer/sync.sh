@@ -85,7 +85,7 @@ if [[ $GITHUB_CREATE_REPO = True && -n "$GITHUB_USER" && ! -z "$GITHUB_PASSWORD"
   fi
   #Check if repository exists.
   repo_exists=$(curl -u $GITHUB_USER:$GITHUB_PASSWORD "https://api.github.com/repos/$GITHUB_ORGANIZATION/$REPO_NAME" | jq -r '.message // empty')
-  if [[ ! -z "$repo_exists" ]]; then
+  if [[ -z "$repo_exists" ]]; then
     echo "Repository already exists!"
     exit 1
   fi
