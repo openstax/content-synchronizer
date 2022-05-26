@@ -74,6 +74,25 @@ shift $((OPTIND - 1))
 
 set -xeo pipefail
 
+#Check Github creation before continuing
+
+
+if [[ $GITHUB_CREATE_REPO = True && -n "$GITHUB_USER" && ! -z "$GITHUB_PASSWORD" && ! -z "$GITHUB_EMAIL" && ! -z "$REPO_NAME" ]]; then
+  if [[ ! -z "$GITHUB_ORGANIZATION" ]]; then
+    #Check if repository exists.
+    repo_container_url="https://api.github.com/orgs/$GITHUB_ORGANIZATION/repos"
+  else
+    repo_container_url="https://api.github.com/orgs/user/repos"
+  fi
+  repo_exists=$(curl -u $GITHUB_USER:$GITHUB_PASSWORD "https://api.github.com/repos/$GITHUB_ORGANIZATION/$REPO_NAME" | jq -r '.message')
+  if [[ "$repo_exists" == 'Not Found' ]]; then
+    repo_creation_output=$(curl -u $GITHUB_USER:$GITHUB_PASSWORD $repo_container_url -d '{"name":"'$REPO_NAME'"}')
+  else
+    echo "Repository already exists!"
+    exit 1
+  fi
+fi
+
 # Upgrade from ./archive-syncfile to META-INF/books.xml
 if [[ ! -f ./META-INF/books.xml ]]; then
   [[ -d ./META-INF/ ]] || mkdir ./META-INF/
@@ -144,25 +163,6 @@ rm -rf ./metadata module-ids ./canonical-modules ./archive-syncfile
 if [[ $GITHUB_CREATE_REPO = True && -n "$GITHUB_USER" && ! -z "$GITHUB_PASSWORD" && ! -z "$GITHUB_EMAIL" && ! -z "$REPO_NAME" ]]; then
 
   echo "Creating Github Repository"
-  eval $(ssh-agent -s)
-  if [ ! -e "$HOME/.ssh/known_hosts" ]; then
-    touch "$HOME/.ssh/known_hosts"
-  fi
-
-
-  if [[ ! -z "$GITHUB_ORGANIZATION" ]]; then
-    #Check if repository exists.
-    repo_container_url="https://api.github.com/orgs/$GITHUB_ORGANIZATION/repos"
-  else
-    repo_container_url="https://api.github.com/orgs/user/repos"
-  fi
-  repo_exists=$(curl -u $GITHUB_USER:$GITHUB_PASSWORD "https://api.github.com/repos/$GITHUB_ORGANIZATION/$REPO_NAME" | jq -r '.message')
-  if [[ "$repo_exists" == 'Not Found' ]]; then
-    repo_creation_output=$(curl -u $GITHUB_USER:$GITHUB_PASSWORD $repo_container_url -d '{"name":"'$REPO_NAME'"}')
-  else
-    echo "Repository already exists!"
-    exit 1
-  fi
 
   git_url=$(echo $repo_creation_output | jq -r '.ssh_url')
   if [[ "$git_url" == null || "$git_url" == "null" ]]; then exit 1; fi
