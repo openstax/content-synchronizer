@@ -79,13 +79,13 @@ set -xeo pipefail
 
 if [[ $GITHUB_CREATE_REPO = True && -n "$GITHUB_USER" && ! -z "$GITHUB_PASSWORD" && ! -z "$GITHUB_EMAIL" && ! -z "$REPO_NAME" ]]; then
   if [[ ! -z "$GITHUB_ORGANIZATION" ]]; then
-    #Check if repository exists.
     repo_container_url="https://api.github.com/orgs/$GITHUB_ORGANIZATION/repos"
   else
     repo_container_url="https://api.github.com/orgs/user/repos"
   fi
+  #Check if repository exists.
   repo_exists=$(curl -u $GITHUB_USER:$GITHUB_PASSWORD "https://api.github.com/repos/$GITHUB_ORGANIZATION/$REPO_NAME" | jq -r '.message')
-  if [[ "$repo_exists" != 'Not Found' ]]; then
+  if [[ -z "$repo_exists" ]]; then
     echo "Repository already exists!"
     exit 1
   fi
