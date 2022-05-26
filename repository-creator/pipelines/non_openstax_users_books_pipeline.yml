@@ -92,11 +92,8 @@ jobs:
                 
                 #Check Github rates limit
                 curl -u '((github:username)):((github:token))' -I https://api.github.com/users/octocat >> stats
-                cat stats
                 remaining_calls=$(cat stats | grep "x-ratelimit-remaining"  | tr -d '\r' |  awk '{print $2}')
                 reset_time=$(cat stats | grep "x-ratelimit-reset"  | tr -d '\r' |  awk '{print $2}')
-                
-                echo $reset_time
                 current_epoch=$(awk 'BEGIN {srand(); print srand()}')
                 sleep_time=$(($reset_time-$current_epoch))
                 echo "$remaining_calls Remaining Calls resetting in $sleep_time seconds."
