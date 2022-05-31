@@ -84,8 +84,10 @@ if [[ $GITHUB_CREATE_REPO = True && -n "$GITHUB_USER" && ! -z "$GITHUB_PASSWORD"
     repo_container_url="https://api.github.com/orgs/user/repos"
   fi
   #Check if repository exists.
-  repo_exists=$(curl -u $GITHUB_USER:$GITHUB_PASSWORD "https://api.github.com/repos/$GITHUB_ORGANIZATION/$REPO_NAME" | jq -r '.message // empty')
-  if [[ -z "$repo_exists" ]]; then
+  repo_check=$(curl -u $GITHUB_USER:$GITHUB_PASSWORD "https://api.github.com/repos/$GITHUB_ORGANIZATION/$REPO_NAME")
+  repo_exists=$(echo $repo_check | jq -r '.message // empty')
+  repo_empty=$(echo $repo_check | jq -r '.size // empty')
+  if [[ -z "$repo_exists" && ! "$repo_empty" -eq "0" ]]; then
     echo "Repository already exists!"
     exit 1
   fi
@@ -164,7 +166,7 @@ if [[ $GITHUB_CREATE_REPO = True && -n "$GITHUB_USER" && ! -z "$GITHUB_PASSWORD"
 
   repo_creation_output=$(curl -u $GITHUB_USER:$GITHUB_PASSWORD $repo_container_url -d '{"name":"'$REPO_NAME'"}')
 
-  git_url=$(echo $repo_creation_output | jq -r '.ssh_url')
+  git_url=$(echo $repo_creation_output | jq -r '.clone_url' | sed "s/github.com/$GITHUB_USER:$GITHUB_PASSWORD@github.com/g")
   if [[ "$git_url" == null || "$git_url" == "null" ]]; then exit 1; fi
 
   echo "Repository URL: $git_url"
