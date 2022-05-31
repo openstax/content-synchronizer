@@ -164,7 +164,12 @@ if [[ $GITHUB_CREATE_REPO = True && -n "$GITHUB_USER" && ! -z "$GITHUB_PASSWORD"
 
   echo "Creating Github Repository"
 
-  repo_creation_output=$(curl -u $GITHUB_USER:$GITHUB_PASSWORD $repo_container_url -d '{"name":"'$REPO_NAME'"}')
+  if [[ -z "$repo_exists" && "$repo_empty" -eq "0" ]];
+  then
+      repo_creation_output=$repo_check
+  else
+      repo_creation_output=$(curl -u $GITHUB_USER:$GITHUB_PASSWORD $repo_container_url -d '{"name":"'$REPO_NAME'"}')
+  fi
 
   git_url=$(echo $repo_creation_output | jq -r '.clone_url' | sed "s/github.com/$GITHUB_USER:$GITHUB_PASSWORD@github.com/g")
   if [[ "$git_url" == null || "$git_url" == "null" ]]; then exit 1; fi
