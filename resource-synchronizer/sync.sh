@@ -89,7 +89,7 @@ if [[ $GITHUB_CREATE_REPO = True && -n "$GITHUB_USER" && ! -z "$GITHUB_PASSWORD"
   repo_empty=$(echo $repo_check | jq -r '.size // empty')
   if [[ -z "$repo_exists" && ! "$repo_empty" -eq "0" ]]; then
     echo "Repository already exists!"
-    exit 1
+    exit 0
   fi
 fi
 
