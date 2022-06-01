@@ -90,7 +90,7 @@ if [[ $GITHUB_CREATE_REPO = True && -n "$GITHUB_USER" && ! -z "$GITHUB_PASSWORD"
   repo_exists=$(echo $repo_check | jq -r '.message // empty')
   repo_empty=$(echo $repo_check | jq -r '.size // empty')
   if [[ -z "$repo_exists" && ! "$repo_empty" -eq "0" ]]; then
-    collection_xml_url=$(curl -u $GITHUB_USER:$GITHUB_PASSWORD -H "Accept: application/vnd.github.v3+raw" -s "https://api.github.com/repos/$GITHUB_ORGANIZATION/$REPO_NAME/contents/collections?ref=main" | jq -r ".download_url // empty")
+    collection_xml_url=$(curl -u $GITHUB_USER:$GITHUB_PASSWORD -H "Accept: application/vnd.github.v3+raw" -s "https://api.github.com/repos/$GITHUB_ORGANIZATION/$REPO_NAME/contents/collections?ref=main" | jq -r ".[] | .download_url")
     curl -u $GITHUB_USER:$GITHUB_PASSWORD -H "Accept: application/vnd.github.v3+raw" collection_xml_url -o collection_xml
     coll_id=$(xmlstarlet sel -t --value-of "//md:content-id" collection_xml)
     while read slug collid; do
