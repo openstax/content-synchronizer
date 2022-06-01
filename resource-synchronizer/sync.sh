@@ -77,6 +77,9 @@ set -xeo pipefail
 #Check Github creation before continuing
 
 if [[ $GITHUB_CREATE_REPO = True && -n "$GITHUB_USER" && ! -z "$GITHUB_PASSWORD" && ! -z "$GITHUB_EMAIL" && ! -z "$REPO_NAME" ]]; then
+
+#  Retain only the 100 first characters of the repository name
+  REPO_NAME=${REPO_NAME::100}
   if [[ ! -z "$GITHUB_ORGANIZATION" ]]; then
     repo_container_url="https://api.github.com/orgs/$GITHUB_ORGANIZATION/repos"
   else
