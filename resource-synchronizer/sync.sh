@@ -24,7 +24,7 @@ help() {
   echo "l     OpenStax Github username"
   echo
   echo "Required if the destination repository is part of an organization"
-  echo "q    Destination Github Orhanization"
+  echo "q    Destination Github Organization"
   echo
 }
 
@@ -76,7 +76,6 @@ set -xeo pipefail
 
 #Check Github creation before continuing
 
-
 if [[ $GITHUB_CREATE_REPO = True && -n "$GITHUB_USER" && ! -z "$GITHUB_PASSWORD" && ! -z "$GITHUB_EMAIL" && ! -z "$REPO_NAME" ]]; then
   if [[ ! -z "$GITHUB_ORGANIZATION" ]]; then
     repo_container_url="https://api.github.com/orgs/$GITHUB_ORGANIZATION/repos"
@@ -88,8 +87,15 @@ if [[ $GITHUB_CREATE_REPO = True && -n "$GITHUB_USER" && ! -z "$GITHUB_PASSWORD"
   repo_exists=$(echo $repo_check | jq -r '.message // empty')
   repo_empty=$(echo $repo_check | jq -r '.size // empty')
   if [[ -z "$repo_exists" && ! "$repo_empty" -eq "0" ]]; then
-    echo "Repository already exists!"
-    exit 0
+    collection_xml_url=$(curl -u $GITHUB_USER:$GITHUB_PASSWORD -H "Accept: application/vnd.github.v3+raw" -s "https://api.github.com/repos/$GITHUB_ORGANIZATION/$REPO_NAME/contents/collections?ref=main" | jq -r ".download_url // empty")
+    curl -u $GITHUB_USER:$GITHUB_PASSWORD -H "Accept: application/vnd.github.v3+raw" collection_xml_url -o collection_xml
+    coll_id=$(xmlstarlet sel -t --value-of "//md:content-id" collection_xml)
+    while read slug collid; do
+      if [[ "$slug" == "$collid" ]]; then
+        echo "Repository already exists!"
+        exit 0
+      fi
+    done <./archive-syncfile
   fi
 fi
 
@@ -130,14 +136,13 @@ done <./archive-syncfile
 
 # Exit if content in collection.xml is empty
 while read slug collid; do
-  sed -i -e  "s/\\\\012//g" "$slug/collection.xml"
+  sed -i -e "s/\\\\012//g" "$slug/collection.xml"
   content=$(xmlstarlet sel -t -v "/col:collection/col:content" $slug/collection.xml | sed 's/ *$//g')
-  if [[ ! "$content" ]];then
+  if [[ ! "$content" ]]; then
     echo "No content found for $slug"
     exit 1
   fi
 done <./archive-syncfile
-
 
 python $CODE_DIR/find-module-canonical.py >canonical-modules
 rm -rf modules collections metadata media
@@ -160,15 +165,33 @@ python $CODE_DIR/poet_ready.py $CODE_DIR
 find modules/. -name metadata.json | xargs rm
 rm -rf ./metadata module-ids ./canonical-modules ./archive-syncfile
 
+curr_dir=${PWD##*/}
+skip_push=False
+
 if [[ $GITHUB_CREATE_REPO = True && -n "$GITHUB_USER" && ! -z "$GITHUB_PASSWORD" && ! -z "$GITHUB_EMAIL" && ! -z "$REPO_NAME" ]]; then
+
+  echo "Login using Github cli"
+  echo $GITHUB_PASSWORD > token.pickle
+  gh auth login --with-token < ./token.pickle
 
   echo "Creating Github Repository"
 
-  if [[ -z "$repo_exists" && "$repo_empty" -eq "0" ]];
-  then
-      repo_creation_output=$repo_check
+  if [[ -z "$repo_exists" ]]; then
+    repo_creation_output=$repo_check
+    if [[ ! "$repo_empty" -eq "0" ]]; then
+      git clone $(echo $repo_creation_output | jq -r '.clone_url' | sed "s/github.com/$GITHUB_USER:$GITHUB_PASSWORD@github.com/g") ../$REPO_NAME
+      cd ../$REPO_NAME
+      git checkout -b $(date +%Y%m%d%H%M%S)
+      rm -rf -v !("/.git")
+      cp -R ../curr_dir/* .
+      git add .
+      git commit -m "$(date +%Y-%m-%d) Commit $REPO_NAME"
+      git push
+      gh pr create --fill --base main
+      skip_push=True
+    fi
   else
-      repo_creation_output=$(curl -u $GITHUB_USER:$GITHUB_PASSWORD $repo_container_url -d '{"name":"'$REPO_NAME'"}')
+    repo_creation_output=$(curl -u $GITHUB_USER:$GITHUB_PASSWORD $repo_container_url -d '{"name":"'$REPO_NAME'"}')
   fi
 
   git_url=$(echo $repo_creation_output | jq -r '.clone_url' | sed "s/github.com/$GITHUB_USER:$GITHUB_PASSWORD@github.com/g")
@@ -177,7 +200,6 @@ if [[ $GITHUB_CREATE_REPO = True && -n "$GITHUB_USER" && ! -z "$GITHUB_PASSWORD"
   echo "Repository URL: $git_url"
   #Clone the Parent Github repository if necessary
   if [[ ! -z "$PARENT_REPO_NAME" && ! -z "$OPENSTAX_GITHUB_USERNAME" && ! -z "$OPENSTAX_GITHUB_TOKEN" ]]; then
-    curr_dir=${PWD##*/}
     git clone "https://$OPENSTAX_GITHUB_USERNAME:$OPENSTAX_GITHUB_TOKEN@github.com/openstax/$PARENT_REPO_NAME.git" ../$PARENT_REPO_NAME
     cd ../$PARENT_REPO_NAME
     main_branch=$(git branch | sed -n -e 's/^\* \(.*\)/\1/p')
@@ -200,9 +222,10 @@ if [[ $GITHUB_CREATE_REPO = True && -n "$GITHUB_USER" && ! -z "$GITHUB_PASSWORD"
     git branch -M main
     git remote add origin "$git_url"
   fi
+  if [[ ! "$skip_push" ]]; then
+    git push --all origin
+  fi
 
-  git push --all origin
   echo "Github Repository Created!"
-
 fi
 echo 'Done.'
