@@ -185,7 +185,7 @@ if [[ $GITHUB_CREATE_REPO = True && -n "$GITHUB_USER" && ! -z "$GITHUB_PASSWORD"
       git clone $(echo $repo_creation_output | jq -r '.clone_url' | sed "s/github.com/$GITHUB_USER:$GITHUB_PASSWORD@github.com/g") ../$REPO_NAME
       cd ../$REPO_NAME
       git checkout -b $(date +%Y%m%d%H%M%S)
-      rm -rf -v !("/.git")
+      find ./ -not -name '.git'  | xargs rm -rf
       cp -R ../curr_dir/* .
       git add .
       git commit -m "$(date +%Y-%m-%d) Commit $REPO_NAME"
