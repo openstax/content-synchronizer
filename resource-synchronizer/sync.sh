@@ -186,7 +186,7 @@ if [[ $GITHUB_CREATE_REPO = True && -n "$GITHUB_USER" && ! -z "$GITHUB_PASSWORD"
       cd ../$REPO_NAME
       git checkout -b $(date +%Y%m%d%H%M%S)
       find ./ -mindepth 1 -not -name '.git'  | xargs rm -rf
-      cp -R ../curr_dir/* .
+      cp -R ../$curr_dir/* .
       git add .
       git commit -m "$(date +%Y-%m-%d) Commit $REPO_NAME"
       git push
