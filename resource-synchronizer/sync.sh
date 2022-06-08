@@ -176,6 +176,7 @@ if [[ $GITHUB_CREATE_REPO = True && -n "$GITHUB_USER" && ! -z "$GITHUB_PASSWORD"
   echo "Login using Github cli"
   echo $GITHUB_PASSWORD > token.pickle
   gh auth login --with-token < ./token.pickle
+  rm ./token.pickle
 
   echo "Creating Github Repository"
 
@@ -184,49 +185,54 @@ if [[ $GITHUB_CREATE_REPO = True && -n "$GITHUB_USER" && ! -z "$GITHUB_PASSWORD"
     if [[ ! "$repo_empty" -eq "0" ]]; then
       git clone $(echo $repo_creation_output | jq -r '.clone_url' | sed "s/github.com/$GITHUB_USER:$GITHUB_PASSWORD@github.com/g") ../$REPO_NAME
       cd ../$REPO_NAME
-      git checkout -b $(date +%Y%m%d%H%M%S)
-      find ./ -mindepth 1 -not -name '.git'  | xargs rm -rf
+      branch_name=$(date +%Y%m%d%H%M%S)
+      git checkout -b $branch_name
+      git config --local user.email $GITHUB_EMAIL
+      git config --local user.name "Migration Sync Script"
+      find ./ -mindepth 1  | grep -v ".git"  | xargs rm -rf {}
       cp -R ../$curr_dir/* .
       git add .
       git commit -m "$(date +%Y-%m-%d) Commit $REPO_NAME"
-      git push
+      git push --set-upstream origin $branch_name
       gh pr create --fill --base main
-      skip_push=True
     fi
-  else
-    repo_creation_output=$(curl -u $GITHUB_USER:$GITHUB_PASSWORD $repo_container_url -d '{"name":"'$REPO_NAME'"}')
+
   fi
 
-  git_url=$(echo $repo_creation_output | jq -r '.clone_url' | sed "s/github.com/$GITHUB_USER:$GITHUB_PASSWORD@github.com/g")
-  if [[ "$git_url" == null || "$git_url" == "null" ]]; then exit 1; fi
-
-  echo "Repository URL: $git_url"
   #Clone the Parent Github repository if necessary
   if [[ ! -z "$PARENT_REPO_NAME" && ! -z "$OPENSTAX_GITHUB_USERNAME" && ! -z "$OPENSTAX_GITHUB_TOKEN" ]]; then
-    git clone "https://$OPENSTAX_GITHUB_USERNAME:$OPENSTAX_GITHUB_TOKEN@github.com/openstax/$PARENT_REPO_NAME.git" ../$PARENT_REPO_NAME
+    private_parent=$(gh repo view --json "isPrivate" "openstax/$PARENT_REPO_NAME" | jq -r '.isPrivate')
+    if [[ "$private_parent" == true || "$private_parent" == "true" ]]; then
+      echo "Private repositories cannot be cloned. Existing migration!"
+      exit 1
+    fi
+    gh repo fork "openstax/$PARENT_REPO_NAME" --org="$GITHUB_ORGANIZATION" --fork-name="$REPO_NAME"  --clone
+    mv $REPO_NAME ../$PARENT_REPO_NAME
+
     cd ../$PARENT_REPO_NAME
     main_branch=$(git branch | sed -n -e 's/^\* \(.*\)/\1/p')
-    for i in $(git branch -a | grep 'remotes' | awk -F/ '{print $3}' | grep -v 'HEAD ->'); do git checkout $i; done
     git checkout $main_branch
     git config --local user.email $GITHUB_EMAIL
     git config --local user.name "Migration Sync Script"
-    git remote set-url origin $git_url
-    git checkout -b "derived-branch"
-    rm -rf *
+    find ./ -mindepth 1  | grep -v ".git"  | xargs rm -rf {}
     cp -R ../$curr_dir/* .
     git add .
-    git commit -m "Initial Commit $REPO_NAME"
-  else
-    git init
-    git config --local user.email $GITHUB_EMAIL
-    git config --local user.name "Migration Sync Script"
-    git add .
-    git commit -m "Initial Commit: $REPO_NAME from $SERVER"
-    git branch -M main
-    git remote add origin "$git_url"
-  fi
-  if [[ ! "$skip_push" ]]; then
+    git commit -m "Initial Commit $REPO_NAME from $SERVER"
     git push --all origin
+    else
+      repo_creation_output=$(curl -u $GITHUB_USER:$GITHUB_PASSWORD $repo_container_url -d '{"name":"'$REPO_NAME'"}')
+      git_url=$(echo $repo_creation_output | jq -r '.clone_url' | sed "s/github.com/$GITHUB_USER:$GITHUB_PASSWORD@github.com/g")
+      if [[ "$git_url" == null || "$git_url" == "null" ]]; then exit 1; fi
+      echo "Repository URL: $git_url"
+
+      git init
+      git config --local user.email $GITHUB_EMAIL
+      git config --local user.name "Migration Sync Script"
+      git add .
+      git commit -m "Initial Commit: $REPO_NAME from $SERVER"
+      git branch -M main
+      git remote add origin "$git_url"
+      git push --all origin
   fi
 
   echo "Github Repository Created!"
