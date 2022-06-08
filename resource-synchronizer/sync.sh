@@ -170,7 +170,6 @@ find modules/. -name metadata.json | xargs rm
 rm -rf ./metadata module-ids ./canonical-modules ./archive-syncfile
 
 curr_dir=${PWD##*/}
-skip_push=False
 
 if [[ $GITHUB_CREATE_REPO = True && -n "$GITHUB_USER" && ! -z "$GITHUB_PASSWORD" && ! -z "$GITHUB_EMAIL" && ! -z "$REPO_NAME" ]]; then
 
@@ -196,6 +195,7 @@ if [[ $GITHUB_CREATE_REPO = True && -n "$GITHUB_USER" && ! -z "$GITHUB_PASSWORD"
       git commit -m "$(date +%Y-%m-%d) Commit $REPO_NAME"
       git push --set-upstream origin $branch_name
       gh pr create --fill --base main
+      exit 0
     fi
 
   fi
@@ -235,7 +235,4 @@ if [[ $GITHUB_CREATE_REPO = True && -n "$GITHUB_USER" && ! -z "$GITHUB_PASSWORD"
       git remote add origin "$git_url"
       git push --all origin
   fi
-
-  echo "Github Repository Created!"
 fi
-echo 'Done.'
