@@ -99,6 +99,7 @@ if [[ $GITHUB_CREATE_REPO = True && -n "$GITHUB_USER" && ! -z "$GITHUB_PASSWORD"
         exit 0
       fi
     done <./archive-syncfile
+    rm ./collection_xml
   fi
 fi
 
@@ -189,7 +190,7 @@ if [[ $GITHUB_CREATE_REPO = True && -n "$GITHUB_USER" && ! -z "$GITHUB_PASSWORD"
       git checkout -b $branch_name
       git config --local user.email $GITHUB_EMAIL
       git config --local user.name "Migration Sync Script"
-      find ./ -mindepth 1  | grep -v ".git"  | xargs rm -rf {}
+      find ./ -mindepth 1  | grep -v ".git" | grep -v ".vscode" | xargs rm -rf {}
       cp -R ../$curr_dir/* .
       git add .
       git commit -m "$(date +%Y-%m-%d) Commit $REPO_NAME"
@@ -214,7 +215,7 @@ if [[ $GITHUB_CREATE_REPO = True && -n "$GITHUB_USER" && ! -z "$GITHUB_PASSWORD"
     git checkout $main_branch
     git config --local user.email $GITHUB_EMAIL
     git config --local user.name "Migration Sync Script"
-    find ./ -mindepth 1  | grep -v ".git"  | xargs rm -rf {}
+    find ./ -mindepth 1  | grep -v ".git" | grep -v ".vscode" | xargs rm -rf {}
     cp -R ../$curr_dir/* .
     git add .
     git commit -m "Initial Commit $REPO_NAME from $SERVER"
