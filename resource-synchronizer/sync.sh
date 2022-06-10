@@ -194,7 +194,7 @@ if [[ $GITHUB_CREATE_REPO = True && -n "$GITHUB_USER" && ! -z "$GITHUB_PASSWORD"
       git add .
       git commit -m "$(date +%Y-%m-%d) Commit $REPO_NAME"
       git push --set-upstream origin $branch_name
-      gh pr create --fill --base main
+      gh pr create --fill --base main --repo "$GITHUB_ORGANIZATION/$REPO_NAME"
       exit 0
     fi
 
