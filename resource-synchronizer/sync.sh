@@ -221,7 +221,7 @@ if [[ $GITHUB_CREATE_REPO = True && -n "$GITHUB_USER" && ! -z "$GITHUB_PASSWORD"
     cp -R ../$curr_dir/* .
     git add .
     git commit -m "Initial Commit $REPO_NAME from $SERVER"
-#    git remote set-url origin "https://$GITHUB_USER:$GITHUB_PASSWORD@github.com/$GITHUB_ORGANIZATION/$REPO_NAME"
+    git remote set-url origin "https://$GITHUB_USER:$GITHUB_PASSWORD@github.com/$GITHUB_ORGANIZATION/derived-from-$PARENT_REPO_NAME"
     git push --all origin
     else
       repo_creation_output=$(curl -u $GITHUB_USER:$GITHUB_PASSWORD $repo_container_url -d '{"name":"'$REPO_NAME'"}')
