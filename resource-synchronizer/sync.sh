@@ -202,24 +202,26 @@ if [[ $GITHUB_CREATE_REPO = True && -n "$GITHUB_USER" && ! -z "$GITHUB_PASSWORD"
 
   #Clone the Parent Github repository if necessary
   if [[ ! -z "$PARENT_REPO_NAME" && ! -z "$OPENSTAX_GITHUB_USERNAME" && ! -z "$OPENSTAX_GITHUB_TOKEN" ]]; then
-    private_parent=$(gh repo view --json "isPrivate" "openstax/$PARENT_REPO_NAME" | jq -r '.isPrivate')
-    if [[ "$private_parent" == true || "$private_parent" == "true" ]]; then
-      echo "Private repositories cannot be cloned. Existing migration!"
-      exit 1
-    fi
-    gh repo fork "openstax/$PARENT_REPO_NAME" --org="$GITHUB_ORGANIZATION" --fork-name="$REPO_NAME"  --clone
-    mv $REPO_NAME ../$PARENT_REPO_NAME
+#    private_parent=$(gh repo view --json "isPrivate" "openstax/$PARENT_REPO_NAME" | jq -r '.isPrivate')
+#    if [[ "$private_parent" == true || "$private_parent" == "true" ]]; then
+#      echo "Private repositories cannot be cloned. Existing migration!"
+#      exit 1
+#    fi
+#    gh repo fork "openstax/$PARENT_REPO_NAME" --org="$GITHUB_ORGANIZATION" --fork-name="$REPO_NAME"  --clone
+#    mv $REPO_NAME ../$PARENT_REPO_NAME
 
+
+    gh repo clone "$GITHUB_ORGANIZATION/derived-from-$PARENT_REPO_NAME" ../$PARENT_REPO_NAME
     cd ../$PARENT_REPO_NAME
-    main_branch=$(git branch | sed -n -e 's/^\* \(.*\)/\1/p')
-    git checkout $main_branch
+#    main_branch=$(git branch | sed -n -e 's/^\* \(.*\)/\1/p')
+    git checkout -b $REPO_NAME
     git config --local user.email $GITHUB_EMAIL
     git config --local user.name "Migration Sync Script"
     find ./ -mindepth 1  | grep -v ".git" | grep -v ".vscode" | xargs rm -rf {}
     cp -R ../$curr_dir/* .
     git add .
     git commit -m "Initial Commit $REPO_NAME from $SERVER"
-    git remote set-url origin "https://$GITHUB_USER:$GITHUB_PASSWORD@github.com/$GITHUB_ORGANIZATION/$REPO_NAME"
+#    git remote set-url origin "https://$GITHUB_USER:$GITHUB_PASSWORD@github.com/$GITHUB_ORGANIZATION/$REPO_NAME"
     git push --all origin
     else
       repo_creation_output=$(curl -u $GITHUB_USER:$GITHUB_PASSWORD $repo_container_url -d '{"name":"'$REPO_NAME'"}')
