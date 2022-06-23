@@ -32,7 +32,7 @@ help() {
 # Main program                                             #
 ############################################################
 # Get options
-while getopts ":hcdve:p:u:r:o:k:l:q:" option; do
+while getopts ":hcdve:p:u:r:o:k:l:q:i:" option; do
   case "${option}" in
   c) #Create Github repo
     GITHUB_CREATE_REPO=True ;;
@@ -59,6 +59,8 @@ while getopts ":hcdve:p:u:r:o:k:l:q:" option; do
     GITHUB_USER=${OPTARG} ;;
   q) #Destination Organization
     GITHUB_ORGANIZATION=${OPTARG} ;;
+  i) #Parent Organization
+    GITHUB_PARENT_ORGANIZATION=${OPTARG} ;;
   v) #display version of script and neb
     neb --version
     exit
@@ -198,6 +200,24 @@ if [[ $GITHUB_CREATE_REPO = True && -n "$GITHUB_USER" && ! -z "$GITHUB_PASSWORD"
       exit 0
     fi
 
+  fi
+
+  #Clone the Parent Github repository if necessary
+  if [[ ! -z "$GITHUB_PARENT_ORGANIZATION" ]]; then
+    echo "Migrating user derived book"
+    gh repo clone "$GITHUB_PARENT_ORGANIZATION/$PARENT_REPO_NAME" ../$PARENT_REPO_NAME
+    cd ../$PARENT_REPO_NAME
+#    main_branch=$(git branch | sed -n -e 's/^\* \(.*\)/\1/p')
+    git checkout -b $REPO_NAME
+    git config --local user.email $GITHUB_EMAIL
+    git config --local user.name "Migration Sync Script"
+    find ./ -mindepth 1  | grep -v ".git" | grep -v ".vscode" | xargs rm -rf {}
+    cp -R ../$curr_dir/* .
+    git add .
+    git commit -m "Initial Commit $REPO_NAME from $SERVER"
+    git remote set-url origin "https://$GITHUB_USER:$GITHUB_PASSWORD@github.com/$GITHUB_PARENT_ORGANIZATION/$PARENT_REPO_NAME"
+    git push --all origin
+    exit 0
   fi
 
   #Clone the Parent Github repository if necessary
