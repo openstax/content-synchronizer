@@ -36,12 +36,12 @@ def override_title(module_file, titles_by_id):
         namespaces=XPATH_NSMAP_BASIC
     )
 
-    module_id = module.xpath(
+    module_content_id = module.xpath(
         "//md:content-id",
         namespaces=XPATH_NSMAP_BASIC
-    )[0].text
+    )
 
-    override_title_value = titles_by_id.get(module_id)
+    override_title_value = titles_by_id.get(module_content_id[0].text) if len(module_content_id) > 0 else None
     if not override_title_value:
         # Module title wasn't defined in a collection file
         return

@@ -1,0 +1,116 @@
+---
+var_sources:
+  - name: github
+    type: dummy
+    config:
+      vars:
+        username: staxly
+        token: ((github-api-token))
+        email: staxly@openstax.org
+        organization: cnx-user-books
+        openstax:
+          username: staxly
+          token: ((github-api-token))
+
+docker-credentials: &docker-credentials
+  username: ((ce-dockerhub-id))
+  password: ((ce-dockerhub-token))
+
+status-notifications: &status-notifications
+  on_success:
+    put: notify
+    params:
+      alert_type: success
+  on_failure:
+    put: notify
+    params:
+      alert_type: failed
+
+resource_types:
+  - name: queue-checker
+    type: registry-image
+    source:
+      repository: golfpapagolf/queue-checker
+  - name: slack-notifier
+    type: registry-image
+    # Switch back to mockersf/concourse-slack-notifier once
+    # https://github.com/mockersf/concourse-slack-notifier/pull/86 is merged
+    source:
+      repository: aoldershaw/concourse-slack-notifier
+
+resources:
+  - name: queue
+    type: queue-checker
+    check_every: 1m
+    source:
+      uri: https://raw.githubusercontent.com/openstax/content-synchronizer/sk-ce-1790/repository-creator/data/json/non_openstax_users_books.json
+
+  - name: content-synchronizer
+    type: git
+    source:
+      uri: https://github.com/openstax/content-synchronizer
+      branch: sk-ce-1790
+
+  - name: notify
+    type: slack-notifier
+    icon: slack
+    source:
+      url: ((slack-webhook-cestream))
+
+jobs:
+  - name: sync-a-book
+    <<: *status-notifications
+    public: true
+    max_in_flight: 2
+    plan:
+      - in_parallel:
+        - get: queue
+          trigger: true
+          version: every
+        - get: content-synchronizer
+      - task: sync-content
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: samuelklutse/openstax-cnx-migration
+              tag: latest
+              <<: *docker-credentials
+
+          inputs:
+            - name: queue
+            - name: content-synchronizer
+          run:
+            path: /bin/bash
+            args:
+              - -c
+              - |
+                set -e
+                item="$(cat queue/item)"
+                [[ ! "$item" ]] && exit 1
+                
+                #Check Github rates limit
+                curl -u '((github:username)):((github:token))' -I https://api.github.com/users/octocat >> stats
+                remaining_calls=$(cat stats | grep "x-ratelimit-remaining"  | tr -d '\r' |  awk '{print $2}')
+                reset_time=$(cat stats | grep "x-ratelimit-reset"  | tr -d '\r' |  awk '{print $2}')
+                current_epoch=$(awk 'BEGIN {srand(); print srand()}')
+                sleep_time=$(($reset_time-$current_epoch))
+                echo "$remaining_calls Remaining Calls resetting in $sleep_time seconds."
+                if [[ "remaing_calls" -gt 9 ]] ; then
+                  echo "Sleeping... See you in $sleep_time seconds"
+                  sleep $sleep_time; 
+                fi
+      
+                collection_id=`echo $item | jq -r '.collection_id'`
+                slug=`echo $item | jq -r '.slug'`
+                name=`echo $item | jq -r '.name'`
+                repo_name=`echo $item | jq -r '.repository_name'`
+                ROOT_DIR=`pwd`
+                mkdir -p tmp
+                mkdir -p /root/.ssh
+                cd tmp
+                echo "$slug $collection_id" > ./archive-syncfile
+                echo "CODE_DIR=$ROOT_DIR/content-synchronizer/resource-synchronizer SERVER=cnx.org ../content-synchronizer/resource-synchronizer/sync.sh -u ((github:username)) -p ((github:token)) -e ((github:email)) -r $repo_name -q ((github:organization)) -c"
+                CODE_DIR=$ROOT_DIR/content-synchronizer/resource-synchronizer SERVER=cnx.org ../content-synchronizer/resource-synchronizer/sync.sh -u ((github:username)) -p ((github:token)) -e ((github:email)) -r $repo_name -q ((github:organization)) -c
+                exit 0
